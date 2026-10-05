@@ -1,0 +1,77 @@
+/** En-tête de fiche : fond en parallaxe, affiche, titre et informations clés. */
+import gsap from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { useLayoutEffect, useRef, type ReactElement, type ReactNode } from 'react';
+import { img } from '../shared/api';
+import { KIND_LABEL } from '../shared/labels';
+import { Poster } from '../shared/poster';
+import type { Kind } from '../shared/types';
+import type { Details } from './tmdb-types';
+
+gsap.registerPlugin(ScrollTrigger);
+
+function facts(d: Details): string[] {
+  const year = (d.release_date ?? d.first_air_date ?? '').slice(0, 4);
+  const runtime = d.runtime ?? d.episode_run_time?.[0];
+  return [
+    year,
+    runtime ? `${Math.floor(runtime / 60) ? `${Math.floor(runtime / 60)} h ` : ''}${runtime % 60} min` : '',
+    d.number_of_seasons ? `${d.number_of_seasons} saison${d.number_of_seasons > 1 ? 's' : ''}` : '',
+    d.number_of_episodes ? `${d.number_of_episodes} épisodes` : '',
+  ].filter(Boolean);
+}
+
+export function TitleHero({ d, kind, children }: { d: Details; kind: Kind; children: ReactNode }): ReactElement {
+  const root = useRef<HTMLDivElement>(null);
+  useLayoutEffect(() => {
+    const ctx = gsap.context(() => {
+      gsap.to('.th-bg', {
+        yPercent: 22,
+        ease: 'none',
+        scrollTrigger: { trigger: root.current, start: 'top top', end: 'bottom top', scrub: true },
+      });
+      gsap.from('.th-poster', { y: 30, opacity: 0, duration: 1, ease: 'expo.out' });
+      gsap.from('.th-copy > *', { y: 20, opacity: 0, duration: 0.9, stagger: 0.06, ease: 'expo.out', delay: 0.05 });
+    }, root);
+    return () => ctx.revert();
+  }, [d.id]);
+  const name = d.title ?? d.name ?? '';
+  const original = d.original_title ?? d.original_name;
+
+  return (
+    <div className="th" ref={root}>
+      <div
+        className="th-bg"
+        style={{ backgroundImage: d.backdrop_path ? `url(${img(d.backdrop_path, 'w1280')})` : undefined }}
+      />
+      <div className="th-shade" />
+      <div className="th-inner">
+        <div className="th-poster">
+          <Poster path={d.poster_path} size="w500" alt={name} />
+        </div>
+        <div className="th-copy">
+          <div className="eyebrow">
+            {KIND_LABEL[kind]}
+            {d.genres.length ? ` · ${d.genres.map((g) => g.name).join(', ')}` : ''}
+          </div>
+          <h1>{name}</h1>
+          {original && original !== name && <div className="th-original serif">{original}</div>}
+          <div className="th-facts">
+            {facts(d).map((f) => (
+              <span key={f}>{f}</span>
+            ))}
+            {d.vote_count > 0 && (
+              <span className="th-vote">
+                ★ {d.vote_average.toFixed(1)}
+                <small> TMDB</small>
+              </span>
+            )}
+          </div>
+          {d.tagline && <p className="th-tagline serif">« {d.tagline} »</p>}
+          <p className="th-overview">{d.overview || 'Pas de résumé en français.'}</p>
+          {children}
+        </div>
+      </div>
+    </div>
+  );
+}
