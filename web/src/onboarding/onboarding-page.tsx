@@ -3,6 +3,7 @@ import { AnimatePresence } from 'framer-motion';
 import { useEffect, useRef, useState, type ReactElement } from 'react';
 import { useNavigate } from 'react-router';
 import { get, send } from '../shared/api';
+import { useGlass } from '../shared/glass/use-glass';
 import type { Card } from '../shared/types';
 import { CHOICES, GOAL, type Choice } from './choices';
 import { PickCard } from './pick-card';
@@ -59,12 +60,13 @@ function usePicks(): [Map<string, Choice>, (card: Card, c: Choice | null) => voi
 
 function ProgressBar({ rated, error }: { rated: number; error: string | null }): ReactElement {
   const navigate = useNavigate();
+  const glass = useGlass<HTMLDivElement>({ pill: true, tint: 0.3, adaptive: true });
   const finish = async (): Promise<void> => {
     await send('POST', '/api/taste/refresh', {});
     navigate('/');
   };
   return (
-    <div className="onboarding-bar">
+    <div className="onboarding-bar" ref={glass}>
       <div className="progress">
         <span style={{ width: `${Math.min(100, (rated / GOAL) * 100)}%` }} />
       </div>

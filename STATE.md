@@ -15,5 +15,8 @@
 - Accueil : « Choisi pour toi » en bannière, rangées Pour toi / Pour toi et l'autre / Parce que tu as aimé X.
 - Premier lancement `/decouverte` : noter vite des titres connus (j'adore, aimé, pas aimé, à voir).
 
+## 2026-10-05 — Direction visuelle
+- Neumorphism (sol) + verre liquide (flottant) + grille bento sur l'accueil (`/api/dashboard`).
+
 ## Suite
 Voir TODO.md.

@@ -29,10 +29,11 @@ function Body({ d, type, id }: { d: Details; type: MediaType; id: number }): Rea
   const isTv = type === 'tv';
   return (
     <>
-      <TitleHero d={d} kind={kind}>
-        <MyEntry t={t} original={d.original_language} available={translationLangs(d)} />
-      </TitleHero>
+      <TitleHero d={d} kind={kind} />
       <div className="page title-page">
+        <section className="card entry-card">
+          <MyEntry t={t} original={d.original_language} available={translationLangs(d)} />
+        </section>
         {isTv ? <SeasonsPanel d={d} t={t} onMoment={setDraft} /> : <MovieCheckpoint t={t} />}
         <NotesPanel t={t} isTv={isTv} original={d.original_language} draft={draft} clearDraft={() => setDraft(null)} />
         <LanguagesPanel d={d} />

@@ -8,6 +8,8 @@ import { TitleCard } from '../shared/title-card';
 import type { Card, Kind, LibraryTitle } from '../shared/types';
 import { useApi } from '../shared/use-api';
 import { useLibrary } from '../shared/use-library';
+import { Bento } from './bento/bento';
+import './bento/bento.css';
 import { Hero } from './hero';
 import { TasteRails } from './taste-rails';
 import { useTaste } from './use-taste';
@@ -92,6 +94,7 @@ export function HomePage(): ReactElement {
       {featured ? <Hero card={featured} eyebrow={mine ? 'Choisi pour toi' : 'Tendance de la semaine'} />
         : <div className="hero skeleton" />}
       <div className="page home">
+        <Bento />
         <OurRails titles={lib?.titles ?? []} />
         {taste && <TasteRails taste={taste} />}
         {lib && lib.titles.length === 0 && !taste?.needsOnboarding && <EmptyHome />}

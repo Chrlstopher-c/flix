@@ -41,3 +41,32 @@ export function markEpisode(
   })();
   setCheckpoint(titleId, userId, season, episode, null);
 }
+
+export type EpisodeEvent = { titleId: string; userId: number; season: number; episode: number; at: number };
+export type CheckpointRow = {
+  titleId: string;
+  userId: number;
+  season: number | null;
+  episode: number | null;
+  atSeconds: number | null;
+  at: number;
+};
+
+/** Épisodes cochés depuis une date, du plus récent au plus ancien. */
+export function episodesSince(since: number): EpisodeEvent[] {
+  return db
+    .query(
+      `SELECT title_id AS titleId, user_id AS userId, season, episode, watched_at AS at
+                   FROM watched_episodes WHERE watched_at > ? ORDER BY watched_at DESC`,
+    )
+    .all(since) as EpisodeEvent[]; // SELECT explicite
+}
+
+export function allCheckpoints(): CheckpointRow[] {
+  return db
+    .query(
+      `SELECT title_id AS titleId, user_id AS userId, season, episode, at_seconds AS atSeconds,
+                   updated_at AS at FROM checkpoints ORDER BY updated_at DESC`,
+    )
+    .all() as CheckpointRow[]; // SELECT explicite
+}

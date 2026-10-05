@@ -12,6 +12,7 @@ Monolithe modulaire : un serveur Bun sert l'API, les images et le front compilé
 | `server/tmdb/` | Accès TMDB avec cache SQLite, proxy d'images avec copie disque, routes catalogue. |
 | `server/library/` | Ce que nous faisons des titres : fiches locales, statut par personne, étiquettes, avis et moments. |
 | `server/progress/` | Où chacun en est : points d'arrêt et épisodes cochés. |
+| `server/dashboard/` | Tableau de bord de l'accueil (grille bento) : agrège bibliothèque, progression, notes et goûts. Lecture seule. |
 | `server/taste/` | Goûts et recommandations : traits des titres, profils par personne et duo, candidats, classement, calcul de fond. |
 | `web/src/app/` | Montage, routage, navigation. |
 | `web/src/shared/` | Design system (CSS, composants génériques), client API, utilitaires de langue et libellés. |
@@ -38,6 +39,20 @@ Monolithe modulaire : un serveur Bun sert l'API, les images et le front compilé
    affinage des 40 premiers avec leurs traits complets, 30 gardés. Raison affichée : source + trait (personne > genre > thème).
 7. **Quand** : 90 s après une modification, chaque nuit à 4 h, ou à la demande (fin du premier lancement).
    Résultats stockés dans `taste_results`, l'accueil les lit sans calcul.
+
+## Direction visuelle
+
+- **Neumorphism pour le sol** : une seule surface (`--surface`), le relief vient de deux ombres (`--raised`, `--inset`…).
+  Cartes, affiches, épisodes, champs, pistes des sélecteurs, grille bento.
+- **Verre liquide pour ce qui flotte** : barre de navigation, panneaux des bannières, barre du premier lancement.
+  `web/src/shared/glass/` greffe la librairie `public/vendor/liquid-glass` (dashersw/liquid-glass-js, MIT) sur un élément
+  React (`useGlass`). La page est photographiée par html2canvas (`glass-snapshot.ts`), reprise quand le DOM, les images,
+  la taille ou le thème changent. Texte adaptatif (`.on-light`) selon la luminosité derrière le verre.
+- Patches locaux de la librairie (repérés « patch design-lab » / « patch FluxTube ») : shaders en `highp` et sans
+  `dot(axe, axe)` (les pilules se réduisaient à une bulle sur GPU réel), réfraction à l'échelle de l'élément, alpha
+  prémultiplié, `window.Container` exposé.
+- Contraintes : pas de `color-mix()` dans le CSS (html2canvas ne le lit pas) ; au plus une poignée de verres simultanés
+  (limite d'environ 16 contextes WebGL par page).
 
 ## Données
 

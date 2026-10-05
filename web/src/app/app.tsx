@@ -11,6 +11,7 @@ import { PersonPage } from '../person/person-page';
 import { SearchPage } from '../search/search-page';
 import { SettingsPage } from '../settings/settings-page';
 import { get } from '../shared/api';
+import { watchPage } from '../shared/glass/glass-snapshot';
 import type { User } from '../shared/types';
 import { TitlePage } from '../title/title-page';
 import { Nav } from './nav';
@@ -59,8 +60,16 @@ function AnimatedRoutes(): ReactElement {
   );
 }
 
+function useGlassWatcher(): void {
+  useEffect(() => {
+    const root = document.getElementById('root');
+    return root ? watchPage(root) : undefined;
+  }, []);
+}
+
 export function App(): ReactElement | null {
   const { me, refresh } = useMe();
+  useGlassWatcher();
   if (me === undefined) return null;
   if (me === null) return <LoginPage onDone={refresh} />;
   return (

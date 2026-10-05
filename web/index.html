@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-    <meta name="theme-color" content="#0d0c0b" />
+    <meta name="theme-color" content="#242320" />
     <link rel="icon" href="/icon.svg" type="image/svg+xml" />
     <title>FluxTube</title>
     <script>
@@ -12,6 +12,9 @@
   </head>
   <body>
     <div id="root"></div>
+    <!-- Verre liquide : dashersw/liquid-glass-js (MIT), patché (précision, réfraction, alpha) — voir ARCHITECTURE.md -->
+    <script src="/vendor/liquid-glass/html2canvas.min.js"></script>
+    <script src="/vendor/liquid-glass/container.js"></script>
     <script type="module" src="/src/app/main.tsx"></script>
   </body>
 </html>

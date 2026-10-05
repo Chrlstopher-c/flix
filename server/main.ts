@@ -4,6 +4,7 @@ import { seedUsers, userFromRequest } from './auth/users';
 import { ENV } from './core/env';
 import { fail } from './core/http';
 import { log } from './core/logger';
+import { dashboardRoutes } from './dashboard/routes';
 import { libraryRoutes } from './library/routes';
 import { tasteRoutes } from './taste/routes';
 import { markDirty, startScheduler } from './taste/scheduler';
@@ -39,7 +40,10 @@ async function route(req: Request): Promise<Response> {
     if (req.method !== 'GET' && lib.ok) markDirty();
     return lib;
   }
-  return (await tmdbRoutes(url, path)) ?? (await tasteRoutes(req, path, user)) ?? fail(404, 'Route inconnue');
+  return (
+    (await tmdbRoutes(url, path)) ?? (await tasteRoutes(req, path, user)) ?? (await dashboardRoutes(path, user))
+    ?? fail(404, 'Route inconnue')
+  );
 }
 
 seedUsers();
