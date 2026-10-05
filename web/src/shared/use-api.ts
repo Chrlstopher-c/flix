@@ -10,7 +10,12 @@ export function useApi<T>(path: string | null): ApiState<T> {
   const [store, setStore] = useState<Store<T>>({ path, error: null });
   const [tick, setTick] = useState(0);
 
-  useEffect(() => onInvalidate(() => setTick((t) => t + 1)), []);
+  useEffect(() => {
+    const off = onInvalidate(() => setTick((t) => t + 1));
+    return () => {
+      off();
+    };
+  }, []);
 
   useEffect(() => {
     if (!path) return;
