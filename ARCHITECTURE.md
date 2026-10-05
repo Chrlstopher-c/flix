@@ -13,6 +13,7 @@ Monolithe modulaire : un serveur Bun sert l'API, les images et le front compilé
 | `server/library/` | Ce que nous faisons des titres : fiches locales, statut par personne, étiquettes, avis et moments. |
 | `server/progress/` | Où chacun en est : points d'arrêt et épisodes cochés. |
 | `server/dashboard/` | Tableau de bord de l'accueil (grille bento) : agrège bibliothèque, progression, notes et goûts. Lecture seule. |
+| `server/mcp/` | Serveur MCP (HTTP streamable, sans session) : clés par compte (hachées), outils lecture/écriture limités au compte de la clé, recommandations perso + duo en lecture. |
 | `server/taste/` | Goûts et recommandations : traits des titres, profils par personne et duo, candidats, classement, calcul de fond. |
 | `web/src/app/` | Montage, routage, navigation. |
 | `web/src/shared/` | Design system (CSS, composants génériques), client API, utilitaires de langue et libellés. |
@@ -48,7 +49,7 @@ Monolithe modulaire : un serveur Bun sert l'API, les images et le front compilé
   `web/src/shared/glass/` greffe la librairie `public/vendor/liquid-glass` (dashersw/liquid-glass-js, MIT) sur un élément
   React (`useGlass`). La page est photographiée par html2canvas (`glass-snapshot.ts`), reprise quand le DOM, les images,
   la taille ou le thème changent. Texte adaptatif (`.on-light`) selon la luminosité derrière le verre.
-- Patches locaux de la librairie (repérés « patch design-lab » / « patch FluxTube ») : shaders en `highp` et sans
+- Patches locaux de la librairie (repérés « patch design-lab » / « patch Flix ») : shaders en `highp` et sans
   `dot(axe, axe)` (les pilules se réduisaient à une bulle sur GPU réel), réfraction à l'échelle de l'élément, alpha
   prémultiplié, `window.Container` exposé.
 - Contraintes : pas de `color-mix()` dans le CSS (html2canvas ne le lit pas) ; au plus une poignée de verres simultanés
@@ -56,5 +57,5 @@ Monolithe modulaire : un serveur Bun sert l'API, les images et le front compilé
 
 ## Données
 
-SQLite (`data/fluxtube.db`, WAL). Signaux conservés pour les futures recommandations : `title_users.added_at`
+SQLite (`data/flix.db`, WAL). Signaux conservés pour les futures recommandations : `title_users.added_at`
 comparé à `titles.created_at` (s'ajouter juste après la création ≈ déjà vu ensemble), notes, statuts, langues.

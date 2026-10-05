@@ -76,7 +76,7 @@ export function Nav(): ReactElement {
   return (
     <header className="nav" ref={glass}>
       <NavLink to="/" className="brand serif">
-        Flux<span>Tube</span>
+        Fli<span>x</span>
       </NavLink>
       <NavLinks />
       <ThemeToggle />

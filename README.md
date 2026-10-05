@@ -1,4 +1,4 @@
-# FluxTube
+# Flix
 
 Une web app à deux pour gérer ensemble ses films, séries et animés : listes, statut de chacun, épisodes cochés,
 points d'arrêt, moments marquants horodatés, avis, étiquettes, version regardée (audio / sous-titres), fiches
@@ -20,12 +20,21 @@ cp .env.example .env      # renseigner TMDB_API_KEY
 ./stop.sh / ./restart.sh
 ```
 
-Au premier lancement, si `FLUXTUBE_USERS` est vide, deux comptes sont créés avec des mots de passe aléatoires
+Au premier lancement, si `FLIX_USERS` est vide, deux comptes sont créés avec des mots de passe aléatoires
 affichés dans `logs/server.log`. Chacun peut ensuite changer son nom et son mot de passe dans Réglages.
 
 Déploiement : `./deploy.sh` (cible dans `.env.deploy`, non suivi : `DEPLOY_HOST`, `DEPLOY_DIR`, `DEPLOY_SERVICE`).
 
 Développement : `pnpm dev:server` + `pnpm dev:web` (Vite sur :5190, proxy vers l'API).
+
+## MCP (Claude)
+
+Chaque compte génère sa clé dans Réglages → « Flix pour Claude ». Endpoint `POST /mcp` (clé en `Authorization: Bearer`)
+ou `POST /mcp/<clé>` pour les clients qui n'acceptent qu'une URL. Les outils n'agissent que sur le compte de la clé.
+
+```bash
+claude mcp add --transport http flix https://<votre-domaine>/mcp --header "Authorization: Bearer <clé>"
+```
 
 ## Ports
 

@@ -115,3 +115,11 @@
 .more { margin-top: 10px; }
 .stack > .segmented { align-self: flex-start; }
 .th-overview { display: -webkit-box; -webkit-line-clamp: 5; -webkit-box-orient: vertical; overflow: hidden; }
+
+.mcp-card { grid-column: 1 / -1; }
+.mcp-list { margin: 0; padding-left: 18px; color: var(--text-2); display: flex; flex-direction: column; gap: 4px; }
+.mcp-setup { width: 100%; }
+.mcp-copy { width: 100%; }
+.mcp-code { display: flex; align-items: center; gap: 10px; padding: 8px 8px 8px 16px; border-radius: 14px; box-shadow: var(--inset); }
+.mcp-code code { flex: 1; min-width: 0; overflow-x: auto; white-space: nowrap; font-size: 12.5px; color: var(--text-2);
+  scrollbar-width: none; }

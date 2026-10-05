@@ -31,6 +31,12 @@
 - `server/library/tags.ts`
 - `server/library/titles.ts`
 - `server/main.ts`
+- `server/mcp/protocol.ts`
+- `server/mcp/routes.ts`
+- `server/mcp/tokens.ts`
+- `server/mcp/tool-kit.ts`
+- `server/mcp/tools-read.ts`
+- `server/mcp/tools-write.ts`
 - `server/progress/progress.ts`
 - `server/taste/candidates.ts`
 - `server/taste/engine.ts`
@@ -74,6 +80,7 @@
 - `web/src/home/bento/tiles-small.tsx`
 - `web/src/home/bento/types.test.ts`
 - `web/src/home/bento/types.ts`
+- `web/src/home/discover.tsx`
 - `web/src/home/hero.tsx`
 - `web/src/home/home-page.tsx`
 - `web/src/home/taste-rails.tsx`
@@ -87,6 +94,7 @@
 - `web/src/onboarding/pick-card.tsx`
 - `web/src/person/person-page.tsx`
 - `web/src/search/search-page.tsx`
+- `web/src/settings/mcp-card.tsx`
 - `web/src/settings/settings-page.tsx`
 - `web/src/shared/api.ts`
 - `web/src/shared/glass/glass-snapshot.ts`
@@ -107,6 +115,7 @@
 - `web/src/shared/types.ts`
 - `web/src/shared/use-api.ts`
 - `web/src/shared/use-debounced.ts`
+- `web/src/shared/use-infinite.ts`
 - `web/src/shared/use-library.ts`
 - `web/src/title/cast-rail.tsx`
 - `web/src/title/checkpoint.tsx`

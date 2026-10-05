@@ -35,7 +35,7 @@ export function LoginPage({ onDone }: { onDone: () => void }): ReactElement {
     <div className="login">
       <div className="login-glow" aria-hidden />
       <motion.form onSubmit={submit} className="login-card" {...ENTER}>
-        <div className="brand serif big">Flux<span>Tube</span></div>
+        <div className="brand serif big">Fli<span>x</span></div>
         <p className="muted">Nos films, nos séries, nos animés. Et où on en est.</p>
         <LabeledField id="name" label="Nom d'utilisateur" autoComplete="username" value={name}
           onChange={setName} autoFocus />

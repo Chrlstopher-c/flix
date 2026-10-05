@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Compile ici puis envoie sur le serveur cible et redémarre le service. Cible lue dans .env.deploy (non suivi) :
-#   DEPLOY_HOST=alias-ssh   DEPLOY_DIR=/chemin/distant   DEPLOY_SERVICE=fluxtube
+#   DEPLOY_HOST=alias-ssh   DEPLOY_DIR=/chemin/distant   DEPLOY_SERVICE=flix
 set -euo pipefail
 cd "$(dirname "$0")"
 [[ -f .env.deploy ]] || { echo ".env.deploy manquant (DEPLOY_HOST, DEPLOY_DIR, DEPLOY_SERVICE)"; exit 1; }

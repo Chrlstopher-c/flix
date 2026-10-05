@@ -694,5 +694,5 @@ class Container {
   }
 }
 
-// patch FluxTube : exposition explicite pour les modules ES (une classe de script classique n’est pas sur window).
+// patch Flix : exposition explicite pour les modules ES (une classe de script classique n’est pas sur window).
 window.Container = Container

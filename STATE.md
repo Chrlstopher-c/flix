@@ -1,4 +1,4 @@
-# État — FluxTube
+# État — Flix
 
 ## 2026-10-05 — V1
 - Comptes (nom + mot de passe), réglages (renommer, changer de mot de passe avec confirmation), thème clair/sombre.
@@ -17,6 +17,11 @@
 
 ## 2026-10-05 — Direction visuelle
 - Neumorphism (sol) + verre liquide (flottant) + grille bento sur l'accueil (`/api/dashboard`).
+
+## 2026-10-05 — Flix
+- Renommage FluxTube → Flix (base renommée automatiquement, ancienne adresse redirigée via `REDIRECT_HOSTS`).
+- MCP intégré : clé par compte dans Réglages, 12 outils (recherche, fiche, bibliothèque, écriture, recos perso + duo).
+- Recalcul des goûts 20 s après la dernière modification (au plus 60 s), langue originale par défaut, défilement infini.
 
 ## Suite
 Voir TODO.md.

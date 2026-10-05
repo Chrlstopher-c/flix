@@ -1,7 +1,7 @@
 import { beforeAll, expect, test } from 'bun:test';
 
 process.env.TMDB_API_KEY ??= 'test';
-process.env.DATA_DIR = `${process.env.TMPDIR ?? '/tmp'}/fluxtube-test-${process.pid}`;
+process.env.DATA_DIR = `${process.env.TMPDIR ?? '/tmp'}/flix-test-${process.pid}`;
 
 let mod: typeof import('./entries');
 let db: typeof import('../core/db').db;

@@ -1,11 +1,21 @@
 /** Connexion SQLite et schéma. */
 import { Database } from 'bun:sqlite';
-import { mkdirSync } from 'node:fs';
+import { existsSync, mkdirSync, renameSync } from 'node:fs';
 import { ENV } from './env';
 
 mkdirSync(ENV.dataDir, { recursive: true });
 
-export const db = new Database(`${ENV.dataDir}/fluxtube.db`, { create: true, strict: true });
+const DB_PATH = `${ENV.dataDir}/flix.db`;
+
+/** Ancien nom de l'app (FluxTube) : la base est renommée une fois, avec ses fichiers WAL. */
+function renameLegacyDb(): void {
+  const legacy = `${ENV.dataDir}/fluxtube.db`;
+  if (!existsSync(legacy) || existsSync(DB_PATH)) return;
+  for (const ext of ['', '-wal', '-shm']) if (existsSync(legacy + ext)) renameSync(legacy + ext, DB_PATH + ext);
+}
+
+renameLegacyDb();
+export const db = new Database(DB_PATH, { create: true, strict: true });
 db.exec('PRAGMA journal_mode = WAL; PRAGMA foreign_keys = ON; PRAGMA synchronous = NORMAL;');
 
 db.exec(`
@@ -54,5 +64,9 @@ CREATE TABLE IF NOT EXISTS watched_episodes (
   PRIMARY KEY (title_id, user_id, season, episode)
 );
 CREATE INDEX IF NOT EXISTS notes_title ON notes(title_id);
+CREATE TABLE IF NOT EXISTS mcp_tokens (
+  user_id INTEGER PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE, token_hash TEXT UNIQUE NOT NULL,
+  created_at INTEGER NOT NULL, last_used_at INTEGER
+);
 CREATE TABLE IF NOT EXISTS taste_results (scope TEXT PRIMARY KEY, body TEXT NOT NULL, computed_at INTEGER NOT NULL);
 `);

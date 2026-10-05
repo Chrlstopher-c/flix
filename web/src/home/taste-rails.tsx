@@ -26,7 +26,7 @@ function Onboarding({ rated, computing }: { rated: number; computing: boolean })
         </div>
         <h2>Apprends-moi tes goûts.</h2>
         <p className="muted">
-          Note une quinzaine de titres connus : FluxTube te proposera ensuite ce qui te ressemble, et ce qui vous
+          Note une quinzaine de titres connus : Flix te proposera ensuite ce qui te ressemble, et ce qui vous
           ressemble à tous les deux.
         </p>
       </div>
