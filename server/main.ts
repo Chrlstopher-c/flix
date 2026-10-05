@@ -5,6 +5,8 @@ import { ENV } from './core/env';
 import { fail } from './core/http';
 import { log } from './core/logger';
 import { libraryRoutes } from './library/routes';
+import { tasteRoutes } from './taste/routes';
+import { markDirty, startScheduler } from './taste/scheduler';
 import { pruneCache } from './tmdb/client';
 import { serveImage } from './tmdb/images';
 import { tmdbRoutes } from './tmdb/routes';
@@ -32,12 +34,18 @@ async function route(req: Request): Promise<Response> {
   if (auth) return auth;
   const user = userFromRequest(req);
   if (!user) return fail(401, 'Non connecté');
-  return (await tmdbRoutes(url, path)) ?? (await libraryRoutes(req, path, user)) ?? fail(404, 'Route inconnue');
+  const lib = await libraryRoutes(req, path, user);
+  if (lib) {
+    if (req.method !== 'GET' && lib.ok) markDirty();
+    return lib;
+  }
+  return (await tmdbRoutes(url, path)) ?? (await tasteRoutes(req, path, user)) ?? fail(404, 'Route inconnue');
 }
 
 seedUsers();
 pruneCache();
 setInterval(pruneCache, 86_400_000);
+startScheduler();
 
 Bun.serve({
   port: ENV.port,

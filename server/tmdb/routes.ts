@@ -1,41 +1,10 @@
 /** Routes catalogue : recherche, tendances, fiches, saisons, personnes. */
 import { fail, json } from '../core/http';
 import { log } from '../core/logger';
-import { classify, type MediaType } from './kind';
+import { cards, isMedia, type Raw } from './cards';
 import { TTL, tmdb } from './client';
-
-type Raw = Record<string, unknown>;
-
-function isMedia(v: string | undefined): v is MediaType {
-  return v === 'movie' || v === 'tv';
-}
-
-/** Carte légère commune à toutes les listes. */
-export function toCard(r: Raw, fallbackType?: MediaType): Raw | null {
-  const mediaType = (r.media_type as string | undefined) ?? fallbackType; // champ TMDB textuel
-  if (!isMedia(mediaType)) return null;
-  const date = (r.release_date ?? r.first_air_date ?? '') as string; // dates TMDB = chaînes ISO
-  const genreIds = (r.genre_ids as number[] | undefined) ?? []; // tableau d'identifiants TMDB
-  const lang = (r.original_language as string | undefined) ?? null;
-  return {
-    id: `${mediaType}:${r.id}`,
-    mediaType,
-    tmdbId: r.id,
-    kind: classify(mediaType, genreIds, lang),
-    name: r.title ?? r.name,
-    poster: r.poster_path ?? null,
-    backdrop: r.backdrop_path ?? null,
-    year: date ? Number(date.slice(0, 4)) : null,
-    vote: r.vote_average ?? null,
-    language: lang,
-    overview: r.overview ?? '',
-  };
-}
-
-function cards(data: unknown, type?: MediaType): Raw[] {
-  const results = ((data as Raw).results as Raw[] | undefined) ?? []; // forme paginée TMDB
-  return results.map((r) => toCard(r, type)).filter((c): c is Raw => c !== null);
-}
+import { fullDetails } from './details';
+import type { MediaType } from './kind';
 
 const DISCOVER: Record<string, [MediaType, Record<string, string>]> = {
   film: ['movie', { sort_by: 'popularity.desc' }],
@@ -60,12 +29,7 @@ async function handle(url: URL, parts: string[]): Promise<Response | null> {
     const page = url.searchParams.get('page') ?? '1';
     return json({ results: cards(await tmdb(`/discover/${type}`, { ...params, page }, TTL.trending), type) });
   }
-  if (section === 'title' && isMedia(a) && b) {
-    const append =
-      'credits,translations,keywords,recommendations,videos,watch/providers' +
-      (a === 'tv' ? ',aggregate_credits' : ',release_dates');
-    return json(await tmdb(`/${a}/${b}`, { append_to_response: append }, TTL.details));
-  }
+  if (section === 'title' && isMedia(a) && b) return json(await fullDetails(a, Number(b)));
   if (section === 'season' && a && b) return json(await tmdb(`/tv/${a}/season/${b}`, {}, TTL.details));
   if (section === 'person' && a) {
     return json(await tmdb(`/person/${a}`, { append_to_response: 'combined_credits,images' }, TTL.person));

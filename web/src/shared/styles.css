@@ -111,7 +111,8 @@ label.label { display: block; font-size: 13px; color: var(--text-2); margin-bott
 .ok-msg { color: var(--st-vu); font-size: 14px; }
 
 .scroller { display: flex; gap: 16px; overflow-x: auto; scroll-snap-type: x mandatory; padding-bottom: 8px;
-  margin: 0 calc(-1 * clamp(16px, 4vw, 56px)); padding-inline: clamp(16px, 4vw, 56px); scrollbar-width: none; }
+  margin: 0 calc(-1 * clamp(16px, 4vw, 56px)); padding-inline: clamp(16px, 4vw, 56px); scrollbar-width: none;
+  scroll-padding-inline: clamp(16px, 4vw, 56px); }
 .scroller::-webkit-scrollbar { display: none; }
 .scroller > * { scroll-snap-align: start; flex: none; }
 

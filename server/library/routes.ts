@@ -17,6 +17,7 @@ async function addTitle(b: Body, user: User): Promise<Response> {
   if (!mediaType || !tmdbId) return fail(400, 'Titre invalide');
   const id = await ensureTitle(mediaType, tmdbId, user.id);
   join(id, user.id, isStatus(b.status) ? b.status : 'a_voir');
+  if (num(b.rating) !== null) updateEntry(id, user.id, { rating: num(b.rating) });
   return json(titleState(id));
 }
 

@@ -62,3 +62,10 @@ export function titleState(titleId: string): Row | null {
     .all(titleId);
   return { ...title, notes, checkpoints, watched };
 }
+
+/** Nombre de notes par titre et par personne, clé « titre|personne ». */
+export function noteCounts(): Map<string, number> {
+  const rows = db.query('SELECT title_id AS t, user_id AS u, COUNT(*) AS n FROM notes GROUP BY title_id, user_id')
+    .all() as { t: string; u: number; n: number }[]; // colonnes du SELECT
+  return new Map(rows.map((r) => [`${r.t}|${r.u}`, r.n]));
+}

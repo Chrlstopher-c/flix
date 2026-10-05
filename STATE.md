@@ -10,5 +10,10 @@
 - Fiche personne : biographie, filmographie complète filtrable.
 - Limite connue : TMDB ne fournit pas les doublages disponibles ; la version est saisie par l'utilisateur.
 
+## 2026-10-05 — Recommandations
+- Moteur `server/taste/` : profil par personne, profil duo, « vu ensemble », raisons affichées, calcul de fond.
+- Accueil : « Choisi pour toi » en bannière, rangées Pour toi / Pour toi et l'autre / Parce que tu as aimé X.
+- Premier lancement `/decouverte` : noter vite des titres connus (j'adore, aimé, pas aimé, à voir).
+
 ## Suite
-Voir TODO.md (algorithme de recommandation par personne + duo).
+Voir TODO.md.

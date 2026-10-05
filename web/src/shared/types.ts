@@ -74,3 +74,10 @@ export type TitleState = LibraryTitle & {
 };
 
 export type Person = { id: number; name: string; profile_path: string | null; character?: string; job?: string };
+
+export type Rec = Card & { reason: string };
+
+export type TasteHome = {
+  forYou: Rec[]; duo: Rec[]; because: { id: string; name: string; items: Rec[] }[];
+  rated: number; needsOnboarding: boolean; computing: boolean; computedAt: number | null;
+};

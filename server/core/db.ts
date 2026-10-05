@@ -54,4 +54,5 @@ CREATE TABLE IF NOT EXISTS watched_episodes (
   PRIMARY KEY (title_id, user_id, season, episode)
 );
 CREATE INDEX IF NOT EXISTS notes_title ON notes(title_id);
+CREATE TABLE IF NOT EXISTS taste_results (scope TEXT PRIMARY KEY, body TEXT NOT NULL, computed_at INTEGER NOT NULL);
 `);

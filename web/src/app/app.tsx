@@ -6,6 +6,7 @@ import { LoginPage } from '../auth/login-page';
 import { SessionProvider } from '../auth/session';
 import { HomePage } from '../home/home-page';
 import { LibraryPage } from '../library/library-page';
+import { OnboardingPage } from '../onboarding/onboarding-page';
 import { PersonPage } from '../person/person-page';
 import { SearchPage } from '../search/search-page';
 import { SettingsPage } from '../settings/settings-page';
@@ -38,17 +39,23 @@ function AnimatedRoutes(): ReactElement {
     window.scrollTo({ top: 0 });
   }, [location.pathname]);
   return (
-      <motion.main key={location.pathname} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.25 }}>
-        <Routes location={location}>
-          <Route path="/" element={<HomePage />} />
-          <Route path="/bibliotheque" element={<LibraryPage />} />
-          <Route path="/recherche" element={<SearchPage />} />
-          <Route path="/titre/:type/:id" element={<TitlePage />} />
-          <Route path="/personne/:id" element={<PersonPage />} />
-          <Route path="/reglages" element={<SettingsPage />} />
-          <Route path="*" element={<HomePage />} />
-        </Routes>
-      </motion.main>
+    <motion.main
+      key={location.pathname}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.25 }}
+    >
+      <Routes location={location}>
+        <Route path="/" element={<HomePage />} />
+        <Route path="/bibliotheque" element={<LibraryPage />} />
+        <Route path="/recherche" element={<SearchPage />} />
+        <Route path="/titre/:type/:id" element={<TitlePage />} />
+        <Route path="/personne/:id" element={<PersonPage />} />
+        <Route path="/reglages" element={<SettingsPage />} />
+        <Route path="/decouverte" element={<OnboardingPage />} />
+        <Route path="*" element={<HomePage />} />
+      </Routes>
+    </motion.main>
   );
 }
 

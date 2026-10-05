@@ -9,6 +9,8 @@ import type { Card, Kind, LibraryTitle } from '../shared/types';
 import { useApi } from '../shared/use-api';
 import { useLibrary } from '../shared/use-library';
 import { Hero } from './hero';
+import { TasteRails } from './taste-rails';
+import { useTaste } from './use-taste';
 
 function LibraryRail({
   title,
@@ -81,14 +83,18 @@ function OurRails({ titles }: { titles: LibraryTitle[] }): ReactElement {
 
 export function HomePage(): ReactElement {
   const { data: lib } = useLibrary();
+  const taste = useTaste();
   const { data: trending } = useApi<{ results: Card[] }>('/api/tmdb/trending');
-  const featured = trending?.results.find((c) => c.backdrop);
+  const mine = taste?.forYou.find((c) => c.backdrop);
+  const featured = mine ?? trending?.results.find((c) => c.backdrop);
   return (
     <>
-      {featured ? <Hero card={featured} eyebrow="Tendance de la semaine" /> : <div className="hero skeleton" />}
+      {featured ? <Hero card={featured} eyebrow={mine ? 'Choisi pour toi' : 'Tendance de la semaine'} />
+        : <div className="hero skeleton" />}
       <div className="page home">
         <OurRails titles={lib?.titles ?? []} />
-        {lib && lib.titles.length === 0 && <EmptyHome />}
+        {taste && <TasteRails taste={taste} />}
+        {lib && lib.titles.length === 0 && !taste?.needsOnboarding && <EmptyHome />}
         <DiscoverRail kind="film" />
         <DiscoverRail kind="serie" />
         <DiscoverRail kind="anime" />

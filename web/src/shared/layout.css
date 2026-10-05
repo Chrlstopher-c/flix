@@ -66,3 +66,39 @@ select.chip { background: transparent; appearance: none; padding-right: 26px; cu
   background-position: calc(100% - 15px) 13px, calc(100% - 10px) 13px; background-size: 5px 5px; background-repeat: no-repeat; }
 select.chip option { background: var(--bg-raise); color: var(--text); }
 .empty { margin: 40px 0; }
+
+.title-card-meta { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.onboarding-banner { display: flex; align-items: center; justify-content: space-between; gap: 24px; margin-top: 32px;
+  padding: 32px; flex-wrap: wrap;
+  background: linear-gradient(120deg, color-mix(in srgb, var(--accent) 14%, var(--bg-raise)), var(--bg-raise) 60%); }
+.onboarding-banner p { margin: 0; max-width: 60ch; }
+
+.onboarding h1 { margin-top: 4px; }
+.onboarding > p { margin: 10px 0 32px; }
+.picks { padding-bottom: 40px; }
+.pick-art { position: relative; border-radius: 10px; box-shadow: var(--shadow); transition: transform 0.4s var(--ease); }
+.pick.done .pick-art .poster img { filter: saturate(0.6) brightness(0.7); }
+.pick-badge { position: absolute; left: 8px; bottom: 8px; padding: 4px 10px; border-radius: 999px; font-size: 12px;
+  font-weight: 600; background: var(--text); color: var(--bg); }
+.pick-badge.adore { background: var(--accent); color: var(--accent-ink); }
+.pick-badge.bof { background: var(--st-abandonne); color: var(--bg); }
+.pick-badge.a_voir { background: var(--st-a_voir); color: var(--bg); }
+.pick-actions { display: flex; gap: 4px; margin-top: 8px; }
+.pick-btn { flex: 1; height: 30px; border-radius: 8px; border: 1px solid var(--line-strong); color: var(--text-2);
+  font-size: 14px; transition: all 0.2s var(--ease); }
+.pick-btn:hover { border-color: var(--text-3); color: var(--text); }
+.pick-btn.on { background: var(--text); color: var(--bg); border-color: transparent; }
+.pick-btn.adore.on { background: var(--accent); color: var(--accent-ink); }
+.more-picks { margin: 0 auto 120px; display: flex; }
+.onboarding-bar { position: fixed; left: 50%; bottom: 20px; transform: translateX(-50%); z-index: 40; display: flex;
+  align-items: center; gap: 14px; padding: 8px 8px 8px 20px; border-radius: 999px; background: var(--glass);
+  border: 1px solid var(--line); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+  width: max-content; max-width: calc(100vw - 24px); }
+.progress { width: 140px; height: 6px; border-radius: 99px; background: var(--line-strong); overflow: hidden; }
+.progress span { display: block; height: 100%; background: var(--accent); transition: width 0.5s var(--ease); }
+@media (max-width: 720px) {
+  .onboarding-bar { bottom: 84px; padding-left: 14px; gap: 10px; }
+  .progress { width: 60px; }
+  .onboarding-bar .btn { padding: 0 12px; font-size: 13px; }
+}
+.duo-wait { margin: 40px 0 0; }
