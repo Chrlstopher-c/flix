@@ -2,14 +2,14 @@
 import type { ReactElement } from 'react';
 import { Link } from 'react-router';
 import { useSession } from '../auth/session';
-import { KIND_PLURAL } from '../shared/labels';
-import { Rail, RailSkeleton } from '../shared/rail';
+import { Rail } from '../shared/rail';
 import { TitleCard } from '../shared/title-card';
-import type { Card, Kind, LibraryTitle } from '../shared/types';
+import type { Card, LibraryTitle } from '../shared/types';
 import { useApi } from '../shared/use-api';
 import { useLibrary } from '../shared/use-library';
 import { Bento } from './bento/bento';
 import './bento/bento.css';
+import { DiscoverRail, EndlessFeed } from './discover';
 import { Hero } from './hero';
 import { TasteRails } from './taste-rails';
 import { useTaste } from './use-taste';
@@ -37,15 +37,6 @@ function LibraryRail({
       {items.map((t) => (
         <TitleCard key={t.id} {...t} entries={t.entries} />
       ))}
-    </Rail>
-  );
-}
-
-function DiscoverRail({ kind }: { kind: Kind }): ReactElement {
-  const { data } = useApi<{ results: Card[] }>(`/api/tmdb/discover/${kind}`);
-  return (
-    <Rail title={KIND_PLURAL[kind]} eyebrow="Populaires en ce moment">
-      {data ? data.results.map((c) => <TitleCard key={c.id} {...c} />) : <RailSkeleton />}
     </Rail>
   );
 }
@@ -101,6 +92,7 @@ export function HomePage(): ReactElement {
         <DiscoverRail kind="film" />
         <DiscoverRail kind="serie" />
         <DiscoverRail kind="anime" />
+        <EndlessFeed />
       </div>
     </>
   );

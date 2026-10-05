@@ -5,6 +5,7 @@ import { ENV } from './core/env';
 import { fail } from './core/http';
 import { log } from './core/logger';
 import { dashboardRoutes } from './dashboard/routes';
+import { migrateDefaultLanguages } from './library/entries';
 import { libraryRoutes } from './library/routes';
 import { tasteRoutes } from './taste/routes';
 import { markDirty, startScheduler } from './taste/scheduler';
@@ -47,6 +48,8 @@ async function route(req: Request): Promise<Response> {
 }
 
 seedUsers();
+const migrated = migrateDefaultLanguages();
+if (migrated) log.info({ migrated }, 'Version par défaut ajoutée aux suivis existants');
 pruneCache();
 setInterval(pruneCache, 86_400_000);
 startScheduler();

@@ -3,16 +3,20 @@ import { log } from '../core/logger';
 import { computeAll } from './engine';
 import { readResult } from './store';
 
-const DEBOUNCE_MS = 90_000;
-const TICK_MS = 20_000;
+const DEBOUNCE_MS = 20_000;
+const MAX_WAIT_MS = 60_000;
+const TICK_MS = 5_000;
 const NIGHT_HOUR = 4;
 
 let dirtyAt = 0;
+let firstDirtyAt = 0;
 let running = false;
 let lastRunDay = '';
 
+/** Une modification : on attend 20 s de calme, mais jamais plus d'une minute pendant qu'on note à la chaîne. */
 export function markDirty(): void {
   dirtyAt = Date.now();
+  if (!firstDirtyAt) firstDirtyAt = dirtyAt;
 }
 
 export function isComputing(): boolean {
@@ -23,6 +27,7 @@ export async function runNow(): Promise<void> {
   if (running) return;
   running = true;
   dirtyAt = 0;
+  firstDirtyAt = 0;
   lastRunDay = new Date().toDateString();
   try {
     await computeAll();
@@ -36,7 +41,9 @@ export async function runNow(): Promise<void> {
 function tick(): void {
   const now = new Date();
   const nightly = now.getHours() === NIGHT_HOUR && lastRunDay !== now.toDateString();
-  if (nightly || (dirtyAt && Date.now() - dirtyAt > DEBOUNCE_MS)) void runNow();
+  const t = Date.now();
+  const due = dirtyAt > 0 && (t - dirtyAt > DEBOUNCE_MS || t - firstDirtyAt > MAX_WAIT_MS);
+  if (nightly || due) void runNow();
 }
 
 export function startScheduler(): void {

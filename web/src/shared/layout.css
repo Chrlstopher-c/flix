@@ -120,3 +120,10 @@ select.chip option { background: var(--bg-raise); color: var(--text); }
 }
 .duo-wait { margin: 40px 0 0; }
 .page.home { padding-top: 12px; }
+
+.rail-more { display: flex; gap: 22px; flex: none; }
+.rail-more > .title-card { width: var(--rail-w, 168px); }
+.feed-more { display: grid; place-items: center; height: 120px; }
+.spinner { width: 28px; height: 28px; border-radius: 50%; box-shadow: var(--inset-sm);
+  border: 3px solid transparent; border-top-color: var(--accent); animation: spin 0.9s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
