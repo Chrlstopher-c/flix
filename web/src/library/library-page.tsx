@@ -40,7 +40,10 @@ export function LibraryPage(): ReactElement {
           <div className="eyebrow">{data ? `${titles.length} sur ${data.titles.length}` : '…'}</div>
           <h1>Bibliothèque</h1>
         </div>
-        <Link to="/recherche" className="btn primary">Ajouter</Link>
+        <div className="row">
+          <Link to="/ensemble" className="btn">Recommandations à plusieurs</Link>
+          <Link to="/recherche" className="btn primary">Ajouter</Link>
+        </div>
       </div>
       <LibraryToolbar filters={filters} onChange={setFilters} titles={data?.titles ?? []} tags={data?.tags ?? []} />
       {data && titles.length === 0 && <p className="muted empty">Aucun titre ne correspond à ces filtres.</p>}

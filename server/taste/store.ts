@@ -6,6 +6,13 @@ export function duoScope(a: number, b: number): string {
   return `duo:${Math.min(a, b)}-${Math.max(a, b)}`;
 }
 
+/** Portée d'un groupe : un duo garde sa clé « duo:a-b », au-delà « group:a-b-c ». */
+export function groupScope(ids: number[]): string {
+  const sorted = [...new Set(ids)].sort((a, b) => a - b);
+  if (sorted.length === 2) return duoScope(sorted[0] as number, sorted[1] as number); // deux éléments
+  return `group:${sorted.join('-')}`;
+}
+
 export function saveResult(scope: string, body: unknown): void {
   db.query('INSERT OR REPLACE INTO taste_results (scope, body, computed_at) VALUES (?, ?, ?)').run(
     scope,

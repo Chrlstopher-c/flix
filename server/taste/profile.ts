@@ -26,17 +26,24 @@ export function buildProfile(signals: Signal[]): Profile {
   return profile;
 }
 
-/** Duo : ce qui plaît aux deux monte, un désaccord fort descend, un rejet de l'un l'emporte. */
-export function duoProfile(a: Profile, b: Profile, together: Profile): Profile {
+/** Groupe (2 personnes ou plus) : ce qui plaît à tous monte, un fort désaccord descend, un seul rejet l'emporte. */
+export function groupProfile(profiles: Profile[], together: Profile): Profile {
   const out: Profile = new Map();
-  for (const f of new Set([...a.keys(), ...b.keys(), ...together.keys()])) {
-    const va = a.get(f) ?? 0;
-    const vb = b.get(f) ?? 0;
-    const base =
-      va < 0 || vb < 0 ? Math.min(va, vb) : (va + vb) / 2 - 0.5 * Math.abs(va - vb) + 0.25 * Math.min(va, vb);
+  const keys = new Set([...profiles.flatMap((p) => [...p.keys()]), ...together.keys()]);
+  for (const f of keys) {
+    const vals = profiles.map((p) => p.get(f) ?? 0);
+    const min = Math.min(...vals);
+    const max = Math.max(...vals);
+    const mean = vals.reduce((x, y) => x + y, 0) / vals.length;
+    const base = min < 0 ? min : mean - 0.5 * (max - min) + 0.25 * min;
     out.set(f, base + 0.5 * (together.get(f) ?? 0));
   }
   return out;
+}
+
+/** Duo = groupe de deux. */
+export function duoProfile(a: Profile, b: Profile, together: Profile): Profile {
+  return groupProfile([a, b], together);
 }
 
 /** Proximité d'un titre avec un profil, et le trait qui y contribue le plus. */

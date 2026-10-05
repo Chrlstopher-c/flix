@@ -1,6 +1,6 @@
 /** Modèles de goût construits depuis la bibliothèque : un par personne, et celui du duo. */
 import type { User } from '../auth/users';
-import { buildProfile, duoProfile, entryWeight, seenTogether, type Profile } from './profile';
+import { buildProfile, entryWeight, groupProfile, seenTogether, type Profile } from './profile';
 import type { Liked } from './candidates';
 import type { Traits } from './traits';
 
@@ -42,6 +42,58 @@ export function userModel(
   };
 }
 
+/** Titres vus ensemble par au moins deux membres du groupe (ajouts rapprochés). */
+function togetherProfile(
+  titles: LibTitle[],
+  traits: Map<string, Traits>,
+  ids: number[],
+): ReturnType<typeof buildProfile> {
+  const together = titles.filter((t) => {
+    const es = ids.map((id) => t.entries.find((e) => e.userId === id)).filter((e) => e !== undefined);
+    return es.some((a, i) => es.slice(i + 1).some((b) => seenTogether(a, b)));
+  });
+  return buildProfile(
+    together.flatMap((t) => {
+      const tr = traits.get(t.id);
+      return tr ? [{ feats: tr.feats, weight: 1 }] : [];
+    }),
+  );
+}
+
+/** Titres aimés par les membres : partagés = poids du moins convaincu + bonus ; isolés = atténués et attribués. */
+function mergeLiked(models: Model[], users: User[]): Liked[] {
+  const byId = new Map<string, { traits: Traits; weights: number[]; names: string[] }>();
+  models.forEach((m, i) => {
+    for (const l of m.liked) {
+      const cur = byId.get(l.traits.id) ?? { traits: l.traits, weights: [], names: [] };
+      cur.weights.push(l.weight);
+      cur.names.push(users[i]?.name ?? '?');
+      byId.set(l.traits.id, cur);
+    }
+  });
+  return [...byId.values()].map(({ traits, weights, names }) => {
+    const all = names.length === models.length;
+    const weight = names.length > 1 ? Math.min(...weights) + 0.3 * (names.length - 1) : (weights[0] ?? 0) * 0.6;
+    return { traits, weight, by: all ? undefined : names.join(' et ') };
+  });
+}
+
+export function groupModel(models: Model[], titles: LibTitle[], traits: Map<string, Traits>, users: User[]): Model {
+  return {
+    liked: mergeLiked(models, users),
+    profile: groupProfile(
+      models.map((m) => m.profile),
+      togetherProfile(
+        titles,
+        traits,
+        users.map((u) => u.id),
+      ),
+    ),
+    exclude: new Set(models.flatMap((m) => [...m.exclude])),
+    rated: Math.min(...models.map((m) => m.rated)),
+  };
+}
+
 export function duoModel(
   a: Model,
   b: Model,
@@ -49,33 +101,5 @@ export function duoModel(
   traits: Map<string, Traits>,
   users: [User, User],
 ): Model {
-  const ids = users.map((u) => u.id);
-  const together = titles.filter((t) => {
-    const [ea, eb] = ids.map((id) => t.entries.find((e) => e.userId === id));
-    return ea && eb && seenTogether(ea, eb);
-  });
-  const togetherProfile = buildProfile(
-    together.flatMap((t) => {
-      const tr = traits.get(t.id);
-      return tr ? [{ feats: tr.feats, weight: 1 }] : [];
-    }),
-  );
-  const byId = new Map<string, Liked>();
-  for (const [i, m] of [a, b].entries()) {
-    for (const l of m.liked) {
-      const cur = byId.get(l.traits.id);
-      byId.set(
-        l.traits.id,
-        cur
-          ? { traits: l.traits, weight: Math.min(cur.weight, l.weight) + 0.3 }
-          : { traits: l.traits, weight: l.weight * 0.6, by: users[i]?.name },
-      );
-    }
-  }
-  return {
-    liked: [...byId.values()],
-    profile: duoProfile(a.profile, b.profile, togetherProfile),
-    exclude: new Set([...a.exclude, ...b.exclude]),
-    rated: Math.min(a.rated, b.rated),
-  };
+  return groupModel([a, b], titles, traits, users);
 }

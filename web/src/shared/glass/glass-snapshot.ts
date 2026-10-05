@@ -2,7 +2,10 @@
 import type { GlassInstance } from './liquid-glass';
 
 const IGNORED = ['glass-container', 'glass-button', 'glass-button-text'];
-const DEBOUNCE_MS = 700;
+const DEBOUNCE_MS = 900;
+/** Une photo de la page coûte cher (html2canvas) : jamais plus d'une toutes les 2,5 s. */
+const MIN_INTERVAL_MS = 2500;
+let lastCapture = 0;
 
 let timer: ReturnType<typeof setTimeout> | undefined;
 let running = false;
@@ -32,6 +35,7 @@ async function capture(): Promise<void> {
     return;
   }
   running = true;
+  lastCapture = Date.now();
   try {
     const snap = await h2c(document.body, {
       scale: 1,
@@ -58,7 +62,8 @@ async function capture(): Promise<void> {
 
 export function scheduleSnapshot(delay = DEBOUNCE_MS): void {
   clearTimeout(timer);
-  timer = setTimeout(() => void capture(), delay);
+  const wait = Math.max(delay, lastCapture + MIN_INTERVAL_MS - Date.now());
+  timer = setTimeout(() => void capture(), wait);
 }
 
 export function onSnapshot(fn: () => void): () => void {

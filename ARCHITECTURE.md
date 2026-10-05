@@ -34,7 +34,8 @@ Monolithe modulaire : un serveur Bun sert l'API, les images et le front compilé
 2. **Poids d'un suivi** : la note prime (`(note − 5) / 2,5`), sinon le statut (vu 1, en cours 0,8, à voir 0,35),
    abandon −1,5, +0,1 par note écrite.
 3. **Profil** = somme pondérée des traits (normalisée par la taille du titre, échelle par type de trait).
-4. **Duo** (un par paire de comptes, `duo:<a>-<b>` ; partenaire choisi dans l'accueil, sinon celui avec qui on partage le plus) : moyenne des deux profils moins la moitié de l'écart, le rejet de l'un l'emporte, bonus des titres vus
+4. **Groupes** : un duo par paire (`duo:<a>-<b>`, calculé avec le reste), et à la demande pour 3 personnes ou plus
+   (`group:<a>-<b>-<c>`, page Ensemble, réutilisé tant qu'aucun recalcul complet n'a eu lieu). Profil de groupe : moyenne des profils moins la moitié de l'écart max−min, le rejet de l'un l'emporte, bonus des titres vus
    ensemble (deux ajouts à moins de 15 min sur un titre vu).
 5. **Candidats** : recommandations TMDB des 12 titres les plus aimés + populaires des 3 genres favoris.
 6. **Classement** : proximité au profil + soutien des titres sources + note TMDB, diversité (raison et source),

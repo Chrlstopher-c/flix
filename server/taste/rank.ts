@@ -60,7 +60,10 @@ export function rankCandidates(
 export function reasonFor(s: Scored, duo: boolean): string {
   const parts: string[] = [];
   const src = [...s.c.sources].sort((a, b) => b.weight - a.weight)[0];
-  if (src && duo) parts.push(src.by ? `${src.by} a aimé ${src.name}` : `Vous avez aimé ${src.name}`);
+  if (src && duo)
+    parts.push(
+      src.by ? `${src.by} ${src.by.includes(' et ') ? 'ont' : 'a'} aimé ${src.name}` : `Vous avez aimé ${src.name}`,
+    );
   else if (src) parts.push(`Parce que tu as aimé ${src.name}`);
   const label = s.why ? s.c.labels[s.why] : undefined;
   if (label) parts.push(label);

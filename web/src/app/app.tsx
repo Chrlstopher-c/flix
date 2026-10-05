@@ -14,6 +14,7 @@ import { get } from '../shared/api';
 import { watchPage } from '../shared/glass/glass-snapshot';
 import type { User } from '../shared/types';
 import { TitlePage } from '../title/title-page';
+import { TogetherPage } from '../together/together-page';
 import { Nav } from './nav';
 
 type Me = { me: User; users: User[] };
@@ -54,6 +55,7 @@ function AnimatedRoutes(): ReactElement {
         <Route path="/personne/:id" element={<PersonPage />} />
         <Route path="/reglages" element={<SettingsPage />} />
         <Route path="/decouverte" element={<OnboardingPage />} />
+          <Route path="/ensemble" element={<TogetherPage />} />
         <Route path="*" element={<HomePage />} />
       </Routes>
     </motion.main>

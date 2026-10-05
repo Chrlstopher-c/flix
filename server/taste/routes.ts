@@ -1,9 +1,10 @@
 /** Routes goûts : accueil personnalisé, sélection de démarrage, recalcul à la demande. */
-import type { User } from '../auth/users';
+import { listUsers, type User } from '../auth/users';
 import { json } from '../core/http';
 import { log } from '../core/logger';
 import { listLibrary } from '../library/queries';
 import type { TasteResult } from './engine';
+import { computeGroup } from './engine';
 import { onboardingCards } from './onboarding';
 import { isComputing, runNow } from './scheduler';
 import { partnerOf } from './partner';
@@ -28,10 +29,22 @@ function home(user: User, url: URL): Response {
   });
 }
 
+const MAX_GROUP = 8;
+
+/** Recommandations pour moi et les personnes choisies (« with=2,3 »), calculées à la demande. */
+async function group(user: User, url: URL): Promise<Response> {
+  const ids = (url.searchParams.get('with') ?? '').split(',').map(Number).filter((n) => Number.isInteger(n) && n > 0);
+  const known = new Set(listUsers().map((u) => u.id));
+  const members = [...new Set([user.id, ...ids.filter((id) => known.has(id))])].slice(0, MAX_GROUP);
+  if (members.length < 2) return json({ members, items: [] });
+  return json({ members, items: await computeGroup(members) });
+}
+
 export async function tasteRoutes(req: Request, path: string, user: User): Promise<Response | null> {
   if (!path.startsWith('/api/taste/')) return null;
   try {
     if (path === '/api/taste/home') return home(user, new URL(req.url));
+    if (path === '/api/taste/group') return await group(user, new URL(req.url));
     if (path === '/api/taste/refresh' && req.method === 'POST') {
       void runNow();
       return json({ computing: true }, 202);

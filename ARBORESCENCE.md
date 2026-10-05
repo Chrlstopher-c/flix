@@ -143,4 +143,5 @@
 - `web/src/title/tmdb-types.ts`
 - `web/src/title/use-title-state.ts`
 - `web/src/title/viewing-languages.tsx`
+- `web/src/together/together-page.tsx`
 - `web/src/vite-env.d.ts`

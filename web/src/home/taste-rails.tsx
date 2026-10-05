@@ -40,6 +40,15 @@ function Onboarding({ rated, computing }: { rated: number; computing: boolean })
   );
 }
 
+function DuoActions({ picker }: { picker: ReactNode }): ReactElement {
+  return (
+    <div className="row">
+      {picker}
+      <Link className="btn small ghost" to="/ensemble">À plusieurs →</Link>
+    </div>
+  );
+}
+
 /** « Pour toi et … » : un sélecteur quand il y a plusieurs personnes avec qui faire un duo. */
 function DuoRail({ taste, setPartner }: { taste: TasteHome; setPartner: (id: number) => void }): ReactElement | null {
   const { users, me } = useSession();
@@ -71,7 +80,7 @@ function DuoRail({ taste, setPartner }: { taste: TasteHome; setPartner: (id: num
       title={`Pour toi et ${partner.name}`}
       eyebrow="Vos goûts communs"
       items={taste.duo}
-      action={picker || undefined}
+      action={<DuoActions picker={picker} />}
     />
   );
 }

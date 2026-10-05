@@ -29,5 +29,10 @@
 - Suggestions : bouton « Suggérer à… » sur les fiches, rangée « Suggéré pour toi », outils MCP `my_suggestions` /
   `suggest_title`. Limiteur : 10 échecs de connexion/inscription par IP et par quart d'heure.
 
+## 2026-10-05 — Ensemble
+- Page « Ensemble » (nav) : recommandations pour moi + les personnes cochées, calcul à la demande (~0,4 s, puis cache).
+- Défilement : la rangée sert de repère et le repère n'est plus une cible d'aimantation (boucle de chargement corrigée),
+  titres sans affiche ou trop obscurs écartés, capture du verre au plus toutes les 2,5 s.
+
 ## Suite
 Voir TODO.md.

@@ -6,9 +6,9 @@ import { listLibrary, noteCounts } from '../library/queries';
 import type { MediaType } from '../tmdb/kind';
 import { gather, genreNames, type Genres } from './candidates';
 import { received } from '../suggestions/store';
-import { duoModel, userModel, type LibTitle, type Model, type Suggested } from './models';
+import { groupModel, userModel, type LibTitle, type Model, type Suggested } from './models';
 import { rankCandidates, toRec, type Rec } from './rank';
-import { duoScope, saveResult } from './store';
+import { groupScope, readResult, saveResult } from './store';
 import { loadTraits, type Traits } from './traits';
 
 export type Because = { id: string; name: string; items: Rec[] };
@@ -82,26 +82,62 @@ async function loadSuggested(users: User[]): Promise<Map<number, Suggested[]>> {
   return out;
 }
 
-export async function computeAll(): Promise<void> {
-  const started = Date.now();
-  const users: User[] = listUsers();
+type Context = {
+  library: (LibTitle & { mediaType: string; tmdbId: number })[];
+  traits: Map<string, Traits>;
+  genres: Genres;
+  models: Map<number, Model>;
+};
+
+/** Tout ce qu'il faut pour calculer : bibliothèque, traits, genres, et un modèle de goût par personne. */
+async function buildContext(users: User[]): Promise<Context> {
   type Row = LibTitle & { mediaType: string; tmdbId: number };
   const library = listLibrary() as unknown as Row[]; // forme de listLibrary
   const [traits, genres] = await Promise.all([loadAllTraits(library), genreNames()]);
   const notes = noteCounts();
   const suggested = await loadSuggested(users);
-  const models = users.map((u) => userModel(u, library, traits, notes, suggested.get(u.id)));
-  for (const [i, u] of users.entries()) {
-    const m = models[i] as Model; // même index que users
-    saveResult(`user:${u.id}`, { forYou: await refine(m, genres, false), because: because(m), rated: m.rated });
+  const models = new Map(users.map((u) => [u.id, userModel(u, library, traits, notes, suggested.get(u.id))]));
+  return { library, traits, genres, models };
+}
+
+async function saveGroup(ctx: Context, members: User[]): Promise<Rec[]> {
+  const g = groupModel(
+    members.map((u) => ctx.models.get(u.id) as Model),
+    ctx.library,
+    ctx.traits,
+    members,
+  ); // tous dans ctx
+  const forYou = await refine(g, ctx.genres, true);
+  saveResult(groupScope(members.map((u) => u.id)), { forYou, because: [], rated: g.rated });
+  return forYou;
+}
+
+export async function computeAll(): Promise<void> {
+  const started = Date.now();
+  const users: User[] = listUsers();
+  const ctx = await buildContext(users);
+  for (const u of users) {
+    const m = ctx.models.get(u.id) as Model; // modèle créé pour chaque personne
+    saveResult(`user:${u.id}`, { forYou: await refine(m, ctx.genres, false), because: because(m), rated: m.rated });
   }
   for (let i = 0; i < users.length; i++) {
-    for (let j = i + 1; j < users.length; j++) {
-      // indices valides par construction des boucles
-      const [ua, ub, a, b] = [users[i], users[j], models[i], models[j]] as [User, User, Model, Model];
-      const duo = duoModel(a, b, library, traits, [ua, ub]);
-      saveResult(duoScope(ua.id, ub.id), { forYou: await refine(duo, genres, true), because: [], rated: duo.rated });
-    }
+    for (let j = i + 1; j < users.length; j++) await saveGroup(ctx, [users[i], users[j]] as User[]); // indices valides
   }
-  log.info({ ms: Date.now() - started, titles: library.length, users: users.length }, 'Recommandations recalculées');
+  log.info(
+    { ms: Date.now() - started, titles: ctx.library.length, users: users.length },
+    'Recommandations recalculées',
+  );
+}
+
+/** Groupe à la demande (3 personnes ou plus) : réutilise le résultat s'il date d'après le dernier calcul complet. */
+export async function computeGroup(memberIds: number[]): Promise<Rec[]> {
+  const users = listUsers();
+  const members = users.filter((u) => memberIds.includes(u.id));
+  const cached = readResult<TasteResult>(groupScope(members.map((u) => u.id)));
+  const lastFull = Math.min(...members.map((u) => readResult(`user:${u.id}`)?.computedAt ?? Infinity));
+  if (cached && cached.computedAt >= lastFull) return cached.body.forYou;
+  const started = Date.now();
+  const forYou = await saveGroup(await buildContext(members), members);
+  log.info({ ms: Date.now() - started, members: members.length }, 'Recommandations de groupe calculées');
+  return forYou;
 }

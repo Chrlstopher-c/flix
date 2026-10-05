@@ -7,9 +7,12 @@ import { fullDetails } from './details';
 import type { MediaType } from './kind';
 
 const DISCOVER: Record<string, [MediaType, Record<string, string>]> = {
-  film: ['movie', { sort_by: 'popularity.desc' }],
-  serie: ['tv', { sort_by: 'popularity.desc', without_genres: '16' }],
-  anime: ['tv', { sort_by: 'popularity.desc', with_genres: '16', with_original_language: 'ja' }],
+  film: ['movie', { sort_by: 'popularity.desc', 'vote_count.gte': '80' }],
+  serie: ['tv', { sort_by: 'popularity.desc', without_genres: '16', 'vote_count.gte': '40' }],
+  anime: [
+    'tv',
+    { sort_by: 'popularity.desc', with_genres: '16', with_original_language: 'ja', 'vote_count.gte': '20' },
+  ],
 };
 
 async function handle(url: URL, parts: string[]): Promise<Response | null> {

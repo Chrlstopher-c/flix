@@ -1,6 +1,6 @@
 /** Outils MCP en lecture : recherche, fiche, ma bibliothèque, mes recommandations, celles des duos. */
 import { listLibrary, titleState } from '../library/queries';
-import type { TasteResult } from '../taste/engine';
+import { computeGroup, type TasteResult } from '../taste/engine';
 import { listUsers } from '../auth/users';
 import { duoScope, readResult } from '../taste/store';
 import { cards, type Raw } from '../tmdb/cards';
@@ -104,6 +104,18 @@ export const READ_TOOLS: Tool[] = [
           for_both: r?.body.forYou.map(compact) ?? [],
         };
       });
+    },
+  },
+  {
+    name: 'group_recommendations',
+    description: 'Recommandations pour moi et plusieurs personnes à la fois (noms), calculées à la demande.',
+    inputSchema: schema({ with: { type: 'array', items: { type: 'string' } } }, ['with']),
+    run: async (a, user) => {
+      const names = (Array.isArray(a.with) ? a.with : []).map((n) => String(n).toLowerCase());
+      const members = listUsers().filter((u) => u.id !== user.id && names.includes(u.name.toLowerCase()));
+      if (!members.length) throw new ToolError('Aucune personne reconnue dans « with »');
+      const items = await computeGroup([user.id, ...members.map((u) => u.id)]);
+      return { with: members.map((u) => u.name), for_all: items.map(compact) };
     },
   },
 ];

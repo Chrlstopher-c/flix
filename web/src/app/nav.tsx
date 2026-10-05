@@ -10,6 +10,7 @@ import { currentTheme, setTheme, type Theme } from '../shared/theme';
 const LINKS = [
   { to: '/', label: 'Accueil' },
   { to: '/bibliotheque', label: 'Bibliothèque' },
+  { to: '/ensemble', label: 'Ensemble' },
   { to: '/recherche', label: 'Recherche' },
 ];
 
