@@ -1,5 +1,5 @@
 /** Racine : charge la session, affiche la connexion ou l'application. */
-import { AnimatePresence, motion } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { useCallback, useEffect, useState, type ReactElement } from 'react';
 import { Route, Routes, useLocation } from 'react-router';
 import { LoginPage } from '../auth/login-page';
@@ -36,14 +36,7 @@ function AnimatedRoutes(): ReactElement {
   const location = useLocation();
   useEffect(() => window.scrollTo({ top: 0 }), [location.pathname]);
   return (
-    <AnimatePresence mode="wait">
-      <motion.main
-        key={location.pathname}
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        transition={{ duration: 0.25 }}
-      >
+      <motion.main key={location.pathname} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.25 }}>
         <Routes location={location}>
           <Route path="/" element={<HomePage />} />
           <Route path="/bibliotheque" element={<LibraryPage />} />
@@ -54,7 +47,6 @@ function AnimatedRoutes(): ReactElement {
           <Route path="*" element={<HomePage />} />
         </Routes>
       </motion.main>
-    </AnimatePresence>
   );
 }
 
