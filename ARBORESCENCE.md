@@ -2,6 +2,7 @@
 
 - `ARCHITECTURE.md`
 - `common/kind.ts`
+- `deploy.sh`
 - `.env`
 - `.env.example`
 - `eslint.config.js`

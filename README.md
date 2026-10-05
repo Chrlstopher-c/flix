@@ -23,6 +23,8 @@ cp .env.example .env      # renseigner TMDB_API_KEY
 Au premier lancement, si `FLUXTUBE_USERS` est vide, deux comptes sont créés avec des mots de passe aléatoires
 affichés dans `logs/server.log`. Chacun peut ensuite changer son nom et son mot de passe dans Réglages.
 
+Déploiement : `./deploy.sh` (cible dans `.env.deploy`, non suivi : `DEPLOY_HOST`, `DEPLOY_DIR`, `DEPLOY_SERVICE`).
+
 Développement : `pnpm dev:server` + `pnpm dev:web` (Vite sur :5190, proxy vers l'API).
 
 ## Ports
