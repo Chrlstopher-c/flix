@@ -59,37 +59,26 @@ function NoteItem({ n, t, original }: { n: Note; t: TitleActions; original: stri
   );
 }
 
+type NoteFilter = 'all' | 'avis' | 'moment';
+const FILTERS: { value: NoteFilter; label: string }[] = [
+  { value: 'all', label: 'Tout' }, { value: 'avis', label: 'Avis' }, { value: 'moment', label: 'Moments' },
+];
+
 export function NotesPanel({ t, isTv, original, draft, clearDraft }: Props): ReactElement | null {
-  const [filter, setFilter] = useState<'all' | 'avis' | 'moment'>('all');
+  const [filter, setFilter] = useState<NoteFilter>('all');
   if (!t.state) return null;
   const notes = t.state.notes.filter((n) => filter === 'all' || n.kind === filter);
+  const key = draft ? `${draft.season}-${draft.episode}-${draft.nonce}` : 'free';
   return (
     <section className="section notes">
       <div className="section-head">
         <h2>Nos notes</h2>
-        <Segmented
-          options={[
-            { value: 'all', label: 'Tout' },
-            { value: 'avis', label: 'Avis' },
-            { value: 'moment', label: 'Moments' },
-          ]}
-          value={filter}
-          onChange={setFilter}
-        />
+        <Segmented options={FILTERS} value={filter} onChange={setFilter} />
       </div>
-      <NoteComposer
-        key={draft ? `${draft.season}-${draft.episode}-${draft.nonce}` : 'free'}
-        t={t}
-        isTv={isTv}
-        original={original}
-        draft={draft}
-        onDone={clearDraft}
-      />
+      <NoteComposer key={key} t={t} isTv={isTv} original={original} draft={draft} onDone={clearDraft} />
       <div className="note-list">
         <AnimatePresence mode="popLayout">
-          {notes.map((n) => (
-            <NoteItem key={n.id} n={n} t={t} original={original} />
-          ))}
+          {notes.map((n) => <NoteItem key={n.id} n={n} t={t} original={original} />)}
         </AnimatePresence>
         {!notes.length && <p className="faint">Rien encore. Le premier avis donne le ton.</p>}
       </div>

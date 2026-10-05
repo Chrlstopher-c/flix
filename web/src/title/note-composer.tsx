@@ -50,59 +50,44 @@ function VersionSelect({
   );
 }
 
-export function NoteComposer({ t, isTv, original, draft, onDone }: Props): ReactElement {
-  const [kind, setKind] = useState<'avis' | 'moment'>(draft ? 'moment' : 'avis');
-  const [season, setSeason] = useState(String(draft?.season ?? ''));
-  const [episode, setEpisode] = useState(String(draft?.episode ?? ''));
-  const [time, setTime] = useState('');
-  const [language, setLanguage] = useState('');
-  const [body, setBody] = useState('');
-  const area = useFocusOnDraft(draft);
+const KINDS: { value: 'avis' | 'moment'; label: string }[] = [
+  { value: 'avis', label: 'Avis' },
+  { value: 'moment', label: 'Moment' },
+];
 
+function useNoteForm(draft: Draft) {
+  const [f, setF] = useState({ kind: draft ? 'moment' : 'avis', season: String(draft?.season ?? ''),
+    episode: String(draft?.episode ?? ''), time: '', language: '', body: '' });
+  const set = (key: keyof typeof f) => (v: string) => setF((cur) => ({ ...cur, [key]: v }));
+  const payload = (): Record<string, unknown> => ({ kind: f.kind, body: f.body, language: f.language || null,
+    atSeconds: parseTime(f.time), season: f.season ? Number(f.season) : null,
+    episode: f.episode ? Number(f.episode) : null });
+  return { f, set, payload, reset: () => setF((cur) => ({ ...cur, body: '', time: '' })) };
+}
+
+export function NoteComposer({ t, isTv, original, draft, onDone }: Props): ReactElement {
+  const { f, set, payload, reset } = useNoteForm(draft);
+  const area = useFocusOnDraft(draft);
+  const kind = f.kind === 'moment' ? 'moment' : 'avis';
   const submit = async (e: FormEvent): Promise<void> => {
     e.preventDefault();
-    if (!body.trim()) return;
-    await t.act('POST', 'notes', {
-      kind,
-      body,
-      language: language || null,
-      atSeconds: parseTime(time),
-      season: season ? Number(season) : null,
-      episode: episode ? Number(episode) : null,
-    });
-    setBody('');
-    setTime('');
+    if (!f.body.trim()) return;
+    await t.act('POST', 'notes', payload());
+    reset();
     onDone();
   };
-
   return (
     <form className="card composer" onSubmit={submit}>
       <div className="row">
-        <Segmented
-          options={[
-            { value: 'avis', label: 'Avis' },
-            { value: 'moment', label: 'Moment' },
-          ]}
-          value={kind}
-          onChange={setKind}
-        />
-        {isTv && <Tiny placeholder="Saison" value={season} onChange={setSeason} />}
-        {isTv && <Tiny placeholder="Épisode" value={episode} onChange={setEpisode} />}
-        {kind === 'moment' && <Tiny placeholder="12:34" value={time} onChange={setTime} />}
-        <VersionSelect original={original} value={language} onChange={setLanguage} />
+        <Segmented options={KINDS} value={kind} onChange={set('kind')} />
+        {isTv && <Tiny placeholder="Saison" value={f.season} onChange={set('season')} />}
+        {isTv && <Tiny placeholder="Épisode" value={f.episode} onChange={set('episode')} />}
+        {kind === 'moment' && <Tiny placeholder="12:34" value={f.time} onChange={set('time')} />}
+        <VersionSelect original={original} value={f.language} onChange={set('language')} />
       </div>
-      <textarea
-        ref={area}
-        className="field"
-        placeholder={kind === 'moment' ? 'Ce passage qui m’a marqué…' : 'Ce que j’en ai pensé…'}
-        value={body}
-        onChange={(e) => setBody(e.target.value)}
-      />
-      <div className="row">
-        <button className="btn primary" disabled={!body.trim()}>
-          Publier
-        </button>
-      </div>
+      <textarea ref={area} className="field" value={f.body} onChange={(e) => set('body')(e.target.value)}
+        placeholder={kind === 'moment' ? 'Ce passage qui m’a marqué…' : 'Ce que j’en ai pensé…'} />
+      <div className="row"><button className="btn primary" disabled={!f.body.trim()}>Publier</button></div>
     </form>
   );
 }

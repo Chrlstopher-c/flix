@@ -2,6 +2,7 @@
 import { useState, type FormEvent, type ReactElement } from 'react';
 import { useSession } from '../auth/session';
 import { send } from '../shared/api';
+import { LabeledField } from '../shared/labeled-field';
 import { Segmented } from '../shared/segmented';
 import { currentTheme, setTheme, type Theme } from '../shared/theme';
 
@@ -47,102 +48,59 @@ function NameForm(): ReactElement {
 }
 
 function PasswordForm(): ReactElement {
-  const [current, setCurrent] = useState('');
-  const [next, setNext] = useState('');
-  const [confirm, setConfirm] = useState('');
+  const [pw, setPw] = useState({ current: '', next: '', confirm: '' });
   const [msg, submit, busy] = useSubmit(async () => {
-    await send('PUT', '/api/me/password', { current, next, confirm });
-    setCurrent('');
-    setNext('');
-    setConfirm('');
+    await send('PUT', '/api/me/password', pw);
+    setPw({ current: '', next: '', confirm: '' });
   }, 'Mot de passe changé');
-  const mismatch = confirm.length > 0 && next !== confirm;
+  const field = (key: keyof typeof pw) => (v: string) => setPw({ ...pw, [key]: v });
+  const valid = pw.current && pw.next.length >= 6 && pw.next === pw.confirm;
   return (
     <form className="card stack" onSubmit={submit}>
       <h3>Mot de passe</h3>
-      <div>
-        <label className="label" htmlFor="pw-cur">
-          Mot de passe actuel
-        </label>
-        <input
-          id="pw-cur"
-          type="password"
-          className="field"
-          autoComplete="current-password"
-          value={current}
-          onChange={(e) => setCurrent(e.target.value)}
-        />
-      </div>
-      <div>
-        <label className="label" htmlFor="pw-new">
-          Nouveau mot de passe
-        </label>
-        <input
-          id="pw-new"
-          type="password"
-          className="field"
-          autoComplete="new-password"
-          value={next}
-          onChange={(e) => setNext(e.target.value)}
-        />
-      </div>
-      <div>
-        <label className="label" htmlFor="pw-conf">
-          Confirmer le nouveau mot de passe
-        </label>
-        <input
-          id="pw-conf"
-          type="password"
-          className="field"
-          autoComplete="new-password"
-          value={confirm}
-          onChange={(e) => setConfirm(e.target.value)}
-        />
-      </div>
-      {mismatch && <div className="error">Les deux mots de passe ne correspondent pas</div>}
+      <LabeledField id="pw-cur" label="Mot de passe actuel" type="password" autoComplete="current-password"
+        value={pw.current} onChange={field('current')} />
+      <LabeledField id="pw-new" label="Nouveau mot de passe" type="password" autoComplete="new-password"
+        value={pw.next} onChange={field('next')} />
+      <LabeledField id="pw-conf" label="Confirmer le nouveau mot de passe" type="password" autoComplete="new-password"
+        value={pw.confirm} onChange={field('confirm')} />
+      {pw.confirm && pw.next !== pw.confirm && <div className="error">Les deux mots de passe ne correspondent pas</div>}
       {msg && <div className={msg.ok ? 'ok-msg' : 'error'}>{msg.text}</div>}
-      <div>
-        <button className="btn primary" disabled={busy || !current || next.length < 6 || next !== confirm}>
-          Changer le mot de passe
-        </button>
-      </div>
+      <div><button className="btn primary" disabled={busy || !valid}>Changer le mot de passe</button></div>
     </form>
   );
 }
 
-export function SettingsPage(): ReactElement {
+function ThemeCard(): ReactElement {
   const [theme, setT] = useState<Theme>(currentTheme);
-  const logout = async (): Promise<void> => {
-    await send('POST', '/api/logout');
-    window.location.assign('/');
-  };
+  const options: { value: Theme; label: string }[] = [
+    { value: 'dark', label: 'Sombre' },
+    { value: 'light', label: 'Clair' },
+  ];
+  return (
+    <div className="card stack">
+      <h3>Apparence</h3>
+      <Segmented options={options} value={theme} onChange={(v) => { setTheme(v); setT(v); }} />
+    </div>
+  );
+}
+
+async function logout(): Promise<void> {
+  await send('POST', '/api/logout');
+  window.location.assign('/');
+}
+
+export function SettingsPage(): ReactElement {
   return (
     <div className="page settings">
       <h1>Réglages</h1>
       <div className="settings-grid">
         <NameForm />
         <PasswordForm />
-        <div className="card stack">
-          <h3>Apparence</h3>
-          <Segmented
-            options={[
-              { value: 'dark', label: 'Sombre' },
-              { value: 'light', label: 'Clair' },
-            ]}
-            value={theme}
-            onChange={(v) => {
-              setTheme(v);
-              setT(v);
-            }}
-          />
-        </div>
+        <ThemeCard />
         <div className="card stack">
           <h3>Session</h3>
-          <div>
-            <button className="btn" onClick={logout}>
-              Se déconnecter
-            </button>
-          </div>
+          <div><button className="btn" onClick={logout}>Se déconnecter</button></div>
         </div>
       </div>
     </div>

@@ -27,3 +27,8 @@ export function parseTime(text: string): number | null {
   if (!text.trim() || parts.some((p) => !Number.isFinite(p))) return null;
   return parts.reduce((acc, p) => acc * 60 + p, 0);
 }
+
+export const KIND_OPTIONS: { value: 'all' | Kind; label: string }[] = [
+  { value: 'all', label: 'Tout' },
+  ...(['film', 'serie', 'anime'] as const).map((k) => ({ value: k, label: KIND_PLURAL[k] })),
+];

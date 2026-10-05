@@ -74,55 +74,45 @@ function visible(eps: Episode[], all: boolean, at: number | null): Episode[] {
   return eps.slice(start, start + WINDOW);
 }
 
-export function SeasonsPanel({
-  d,
-  t,
-  onMoment,
-}: {
-  d: Details;
-  t: TitleActions;
-  onMoment: (dr: Draft) => void;
-}): ReactElement | null {
-  const { me } = useSession();
-  const seasons = (d.seasons ?? []).filter((s) => s.episode_count > 0);
-  const mineCp = t.state?.checkpoints.find((c) => c.userId === me.id);
-  const first =
-    seasons.find((s) => s.season_number === (mineCp?.season ?? 1)) ??
-    seasons.find((s) => s.season_number > 0) ??
-    seasons[0];
-  const [n, setN] = useState(first?.season_number ?? 1);
-  const [all, setAll] = useState(false);
-  const { data } = useApi<Season>(seasons.length ? `/api/tmdb/season/${d.id}/${n}` : null);
-  if (!seasons.length) return null;
-  const tracked = Boolean(t.state?.entries.some((e) => e.userId === me.id));
+type PanelProps = { d: Details; t: TitleActions; onMoment: (dr: Draft) => void };
+type ListProps = PanelProps & { n: number; tracked: boolean; at: number | null };
 
+function EpisodeList({ d, t, n, tracked, at, onMoment }: ListProps): ReactElement {
+  const [all, setAll] = useState(false);
+  const { data } = useApi<Season>(`/api/tmdb/season/${d.id}/${n}`);
+  const ready = data?.season_number === n;
   return (
-    <section className="section seasons">
-      <div className="section-head">
-        <h2>Épisodes</h2>
-        <Progress t={t} />
-      </div>
-      <SeasonTabs seasons={seasons} n={n} setN={setN} t={t} />
-      {!tracked && <p className="faint">Ajoute le titre à ta liste pour cocher les épisodes.</p>}
+    <>
       <div className="episodes">
-        {data?.season_number === n
-          ? visible(data.episodes, all, mineCp?.season === n ? mineCp.episode : null).map((e) => (
-              <EpisodeRow
-                key={e.episode_number}
-                season={n}
-                ep={e}
-                t={t}
-                tracked={tracked}
-                onMoment={() => onMoment({ season: n, episode: e.episode_number, nonce: Date.now() })}
-              />
-            ))
-          : Array.from({ length: 4 }, (_, i) => <div key={i} className="episode skeleton" style={{ height: 96 }} />)}
+        {ready ? visible(data.episodes, all, at).map((e) => (
+          <EpisodeRow key={e.episode_number} season={n} ep={e} t={t} tracked={tracked}
+            onMoment={() => onMoment({ season: n, episode: e.episode_number, nonce: Date.now() })} />
+        )) : Array.from({ length: 4 }, (_, i) => <div key={i} className="episode skeleton" style={{ height: 96 }} />)}
       </div>
-      {data && data.episodes.length > WINDOW && (
+      {ready && data.episodes.length > WINDOW && (
         <button className="btn small ghost more" onClick={() => setAll(!all)}>
           {all ? 'Replier' : `Afficher les ${data.episodes.length} épisodes`}
         </button>
       )}
+    </>
+  );
+}
+
+export function SeasonsPanel({ d, t, onMoment }: PanelProps): ReactElement | null {
+  const { me } = useSession();
+  const seasons = (d.seasons ?? []).filter((s) => s.episode_count > 0);
+  const cp = t.state?.checkpoints.find((c) => c.userId === me.id);
+  const first = seasons.find((s) => s.season_number === (cp?.season ?? 1)) ?? seasons.find((s) => s.season_number > 0);
+  const [n, setN] = useState(first?.season_number ?? seasons[0]?.season_number ?? 1);
+  if (!seasons.length) return null;
+  const tracked = Boolean(t.state?.entries.some((e) => e.userId === me.id));
+  return (
+    <section className="section seasons">
+      <div className="section-head"><h2>Épisodes</h2><Progress t={t} /></div>
+      <SeasonTabs seasons={seasons} n={n} setN={setN} t={t} />
+      {!tracked && <p className="faint">Ajoute le titre à ta liste pour cocher les épisodes.</p>}
+      <EpisodeList key={n} d={d} t={t} n={n} tracked={tracked} at={cp?.season === n ? cp.episode : null}
+        onMoment={onMoment} />
     </section>
   );
 }

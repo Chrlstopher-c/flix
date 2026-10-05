@@ -13,7 +13,8 @@ type CacheRow = { body: string; fetched_at: number };
 export async function tmdb(path: string, params: Record<string, string>, ttl: number): Promise<unknown> {
   const query = new URLSearchParams({ language: 'fr-FR', ...params });
   const key = `${path}?${query}`;
-  const cached = db.query('SELECT body, fetched_at FROM tmdb_cache WHERE key = ?').get(key) as CacheRow | null; // colonnes du SELECT
+  const select = db.query('SELECT body, fetched_at FROM tmdb_cache WHERE key = ?');
+  const cached = select.get(key) as CacheRow | null; // colonnes du SELECT
   if (cached && Date.now() - cached.fetched_at < ttl) return JSON.parse(cached.body);
   query.set('api_key', ENV.tmdbKey);
   try {

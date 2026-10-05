@@ -18,37 +18,32 @@ type Props = {
   hint?: string;
 };
 
-export function TitleCard(p: Props): ReactElement {
+const ENTER = { initial: { opacity: 0, y: 12 }, animate: { opacity: 1, y: 0 }, exit: { opacity: 0 },
+  transition: { duration: 0.45, ease: [0.22, 1, 0.36, 1] as const } };
+
+function Dots({ entries }: { entries: Entry[] }): ReactElement {
   const { users } = useSession();
   return (
-    <motion.div
-      layout
-      initial={{ opacity: 0, y: 12 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0 }}
-      transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
-      className="title-card"
-    >
+    <div className="title-card-dots">
+      {entries.map((e) => {
+        const u = users.find((x) => x.id === e.userId);
+        const style = { background: u?.color, outlineColor: `var(--st-${e.status})` };
+        const title = `${u?.name ?? '?'} · ${STATUS_LABEL[e.status]}`;
+        return <span key={e.userId} title={title} className="who" style={style}>
+          {u?.name.slice(0, 1)}
+        </span>;
+      })}
+    </div>
+  );
+}
+
+export function TitleCard(p: Props): ReactElement {
+  return (
+    <motion.div layout {...ENTER} className="title-card">
       <Link to={`/titre/${p.mediaType}/${p.tmdbId}`}>
         <div className="title-card-art">
           <Poster path={p.poster} alt={p.name} />
-          {p.entries && p.entries.length > 0 && (
-            <div className="title-card-dots">
-              {p.entries.map((e) => {
-                const u = users.find((x) => x.id === e.userId);
-                return (
-                  <span
-                    key={e.userId}
-                    title={`${u?.name ?? '?'} · ${STATUS_LABEL[e.status]}`}
-                    className="who"
-                    style={{ background: u?.color, outlineColor: `var(--st-${e.status})` }}
-                  >
-                    {u?.name.slice(0, 1)}
-                  </span>
-                );
-              })}
-            </div>
-          )}
+          {p.entries && p.entries.length > 0 && <Dots entries={p.entries} />}
         </div>
         <div className="title-card-name">{p.name}</div>
         <div className="title-card-meta">{p.hint ?? [KIND_LABEL[p.kind], p.year].filter(Boolean).join(' · ')}</div>

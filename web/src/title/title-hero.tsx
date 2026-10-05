@@ -1,7 +1,7 @@
 /** En-tête de fiche : fond en parallaxe, affiche, titre et informations clés. */
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { useLayoutEffect, useRef, type ReactElement, type ReactNode } from 'react';
+import { useLayoutEffect, useRef, type ReactElement, type ReactNode, type RefObject } from 'react';
 import { img } from '../shared/api';
 import { KIND_LABEL } from '../shared/labels';
 import { Poster } from '../shared/poster';
@@ -21,52 +21,45 @@ function facts(d: Details): string[] {
   ].filter(Boolean);
 }
 
-export function TitleHero({ d, kind, children }: { d: Details; kind: Kind; children: ReactNode }): ReactElement {
+function useHeroMotion(key: number): RefObject<HTMLDivElement | null> {
   const root = useRef<HTMLDivElement>(null);
   useLayoutEffect(() => {
     const ctx = gsap.context(() => {
-      gsap.to('.th-bg', {
-        yPercent: 22,
-        ease: 'none',
-        scrollTrigger: { trigger: root.current, start: 'top top', end: 'bottom top', scrub: true },
-      });
+      const scrollTrigger = { trigger: root.current, start: 'top top', end: 'bottom top', scrub: true };
+      gsap.to('.th-bg', { yPercent: 22, ease: 'none', scrollTrigger });
       gsap.from('.th-poster', { y: 30, opacity: 0, duration: 1, ease: 'expo.out' });
       gsap.from('.th-copy > *', { y: 20, opacity: 0, duration: 0.9, stagger: 0.06, ease: 'expo.out', delay: 0.05 });
     }, root);
     return () => ctx.revert();
-  }, [d.id]);
+  }, [key]);
+  return root;
+}
+
+function Facts({ d }: { d: Details }): ReactElement {
+  return (
+    <div className="th-facts">
+      {facts(d).map((f) => <span key={f}>{f}</span>)}
+      {d.vote_count > 0 && <span className="th-vote">★ {d.vote_average.toFixed(1)}<small> TMDB</small></span>}
+    </div>
+  );
+}
+
+export function TitleHero({ d, kind, children }: { d: Details; kind: Kind; children: ReactNode }): ReactElement {
+  const root = useHeroMotion(d.id);
   const name = d.title ?? d.name ?? '';
   const original = d.original_title ?? d.original_name;
-
+  const bg = d.backdrop_path ? `url(${img(d.backdrop_path, 'w1280')})` : undefined;
   return (
     <div className="th" ref={root}>
-      <div
-        className="th-bg"
-        style={{ backgroundImage: d.backdrop_path ? `url(${img(d.backdrop_path, 'w1280')})` : undefined }}
-      />
+      <div className="th-bg" style={{ backgroundImage: bg }} />
       <div className="th-shade" />
       <div className="th-inner">
-        <div className="th-poster">
-          <Poster path={d.poster_path} size="w500" alt={name} />
-        </div>
+        <div className="th-poster"><Poster path={d.poster_path} size="w500" alt={name} /></div>
         <div className="th-copy">
-          <div className="eyebrow">
-            {KIND_LABEL[kind]}
-            {d.genres.length ? ` · ${d.genres.map((g) => g.name).join(', ')}` : ''}
-          </div>
+          <div className="eyebrow">{[KIND_LABEL[kind], ...d.genres.map((g) => g.name)].join(' · ')}</div>
           <h1>{name}</h1>
           {original && original !== name && <div className="th-original serif">{original}</div>}
-          <div className="th-facts">
-            {facts(d).map((f) => (
-              <span key={f}>{f}</span>
-            ))}
-            {d.vote_count > 0 && (
-              <span className="th-vote">
-                ★ {d.vote_average.toFixed(1)}
-                <small> TMDB</small>
-              </span>
-            )}
-          </div>
+          <Facts d={d} />
           {d.tagline && <p className="th-tagline serif">« {d.tagline} »</p>}
           <p className="th-overview">{d.overview || 'Pas de résumé en français.'}</p>
           {children}

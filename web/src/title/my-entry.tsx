@@ -5,7 +5,7 @@ import { useSession } from '../auth/session';
 import { STATUS_LABEL, STATUS_ORDER } from '../shared/labels';
 import { shortVersion } from '../shared/languages';
 import { Segmented } from '../shared/segmented';
-import type { Status } from '../shared/types';
+import type { Entry } from '../shared/types';
 import { Rating } from './rating';
 import { TagEditor } from './tag-editor';
 import type { TitleActions } from './use-title-state';
@@ -39,62 +39,36 @@ function Others({ t }: { t: TitleActions }): ReactElement | null {
   );
 }
 
-export function MyEntry({
-  t,
-  original,
-  available,
-}: {
-  t: TitleActions;
-  original: string;
-  available: string[];
-}): ReactElement {
+const FADE = { initial: { opacity: 0, y: 8 }, animate: { opacity: 1, y: 0 }, exit: { opacity: 0 } };
+type Props = { t: TitleActions; original: string; available: string[] };
+
+function Tracked({ t, original, available, entry }: Props & { entry: Entry }): ReactElement {
+  return (
+    <motion.div key="in" className="stack" {...FADE}>
+      <Segmented options={STATUS_OPTIONS} value={entry.status} onChange={(status) => t.act('PUT', 'me', { status })} />
+      <div className="row">
+        <Rating value={entry.rating} onChange={(rating) => t.act('PUT', 'me', { rating })} />
+        <ViewingLanguages value={entry.languages} original={original} available={available}
+          onChange={(languages) => t.act('PUT', 'me', { languages })} />
+      </div>
+      <TagEditor t={t} />
+      <button className="btn small ghost leave" onClick={() => t.act('DELETE', 'me', {})}>Retirer de ma liste</button>
+    </motion.div>
+  );
+}
+
+export function MyEntry(props: Props): ReactElement {
+  const { t } = props;
   const { me } = useSession();
   const mine = t.state?.entries.find((e) => e.userId === me.id);
-  const setStatus = (s: Status): Promise<void> => (t.state ? t.act('PUT', 'me', { status: s }) : t.add(s));
-
   return (
     <div className="my-entry">
       <AnimatePresence mode="wait" initial={false}>
-        {mine ? (
-          <motion.div
-            key="in"
-            className="stack"
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0 }}
-          >
-            <Segmented options={STATUS_OPTIONS} value={mine.status} onChange={setStatus} />
-            <div className="row">
-              <Rating value={mine.rating} onChange={(rating) => t.act('PUT', 'me', { rating })} />
-              <ViewingLanguages
-                value={mine.languages}
-                original={original}
-                available={available}
-                onChange={(languages) => t.act('PUT', 'me', { languages })}
-              />
-            </div>
-            <TagEditor t={t} />
-            <button className="btn small ghost leave" onClick={() => t.act('DELETE', 'me', {})}>
-              Retirer de ma liste
-            </button>
-          </motion.div>
-        ) : (
-          <motion.div
-            key="out"
-            className="row"
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0 }}
-          >
-            <button className="btn primary" onClick={() => t.add('a_voir')}>
-              + Ma liste
-            </button>
-            <button className="btn" onClick={() => t.add('en_cours')}>
-              Je regarde
-            </button>
-            <button className="btn" onClick={() => t.add('vu')}>
-              Déjà vu
-            </button>
+        {mine ? <Tracked key="in" {...props} entry={mine} /> : (
+          <motion.div key="out" className="row" {...FADE}>
+            <button className="btn primary" onClick={() => t.add('a_voir')}>+ Ma liste</button>
+            <button className="btn" onClick={() => t.add('en_cours')}>Je regarde</button>
+            <button className="btn" onClick={() => t.add('vu')}>Déjà vu</button>
           </motion.div>
         )}
       </AnimatePresence>

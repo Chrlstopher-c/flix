@@ -11,7 +11,8 @@ beforeAll(async () => {
   mod = await import('./entries');
   db.query("INSERT INTO users (id, name, password_hash, color) VALUES (1, 'a', 'x', '#fff')").run();
   db.query(
-    "INSERT INTO titles (id, media_type, tmdb_id, kind, name, created_at) VALUES ('movie:1', 'movie', 1, 'film', 'T', 0)",
+    "INSERT INTO titles (id, media_type, tmdb_id, kind, name, created_at) " +
+      "VALUES ('movie:1', 'movie', 1, 'film', 'T', 0)",
   ).run();
 });
 

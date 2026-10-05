@@ -20,30 +20,29 @@ function castOf(d: Details): CastLine[] {
     .map((c) => ({ id: c.id, name: c.name, profile_path: c.profile_path, role: c.character ?? '' }));
 }
 
+function Credits({ d }: { d: Details }): ReactElement {
+  const crew = (d.credits?.crew ?? []).filter((c) => c.job === 'Director' || c.job === 'Screenplay').slice(0, 4);
+  const people = [
+    ...(d.created_by ?? []).map((c) => ({ id: c.id, name: c.name, job: 'Création' })),
+    ...crew.map((c) => ({ id: c.id, name: c.name, job: c.job === 'Director' ? 'Réalisation' : 'Scénario' })),
+  ];
+  return (
+    <div className="faint small">
+      {people.map((c, i) => (
+        <span key={`${c.id}-${i}`}>
+          {i ? ' · ' : ''}{c.job} <Link className="link" to={`/personne/${c.id}`}>{c.name}</Link>
+        </span>
+      ))}
+    </div>
+  );
+}
+
 export function CastRail({ d }: { d: Details }): ReactElement | null {
   const cast = castOf(d);
-  const crew = (d.credits?.crew ?? []).filter((c) => c.job === 'Director' || c.job === 'Screenplay').slice(0, 4);
-  const creators = d.created_by ?? [];
   if (!cast.length) return null;
   return (
     <section className="section">
-      <div className="section-head">
-        <h2>Distribution</h2>
-        <div className="faint small">
-          {[
-            ...creators.map((c) => ({ id: c.id, name: c.name, job: 'Création' })),
-            ...crew.map((c) => ({ id: c.id, name: c.name, job: c.job === 'Director' ? 'Réalisation' : 'Scénario' })),
-          ].map((c, i) => (
-            <span key={`${c.id}-${i}`}>
-              {i ? ' · ' : ''}
-              {c.job}{' '}
-              <Link className="link" to={`/personne/${c.id}`}>
-                {c.name}
-              </Link>
-            </span>
-          ))}
-        </div>
-      </div>
+      <div className="section-head"><h2>Distribution</h2><Credits d={d} /></div>
       <div className="scroller">
         {cast.map((c) => (
           <Link key={c.id} to={`/personne/${c.id}`} className="cast">

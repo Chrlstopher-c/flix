@@ -10,26 +10,27 @@ import { LibraryToolbar } from './library-toolbar';
 
 function loadFilters(): Filters {
   try {
-    return { ...DEFAULT_FILTERS, ...(JSON.parse(sessionStorage.getItem('ft-filters') ?? '{}') as Partial<Filters>) }; // posé par saveFilters
+    const saved = JSON.parse(sessionStorage.getItem('ft-filters') ?? '{}') as Partial<Filters>; // posé par useFilters
+    return { ...DEFAULT_FILTERS, ...saved };
   } catch {
     return DEFAULT_FILTERS;
   }
 }
 
-export function LibraryPage(): ReactElement {
-  const { me } = useSession();
-  const { data } = useLibrary();
+function useFilters(): [Filters, (f: Filters) => void] {
   const [filters, setFilters] = useState<Filters>(loadFilters);
   const update = (f: Filters): void => {
     setFilters(f);
-    try {
-      sessionStorage.setItem('ft-filters', JSON.stringify(f));
-    } catch {
-      /* filtres non mémorisés */
-    }
+    try { sessionStorage.setItem('ft-filters', JSON.stringify(f)); } catch { /* filtres non mémorisés */ }
   };
-  const titles = useMemo(() => applyFilters(data?.titles ?? [], filters, me.id), [data, filters, me.id]);
+  return [filters, update];
+}
 
+export function LibraryPage(): ReactElement {
+  const { me } = useSession();
+  const { data } = useLibrary();
+  const [filters, setFilters] = useFilters();
+  const titles = useMemo(() => applyFilters(data?.titles ?? [], filters, me.id), [data, filters, me.id]);
   return (
     <div className="page library">
       <div className="section-head">
@@ -37,17 +38,13 @@ export function LibraryPage(): ReactElement {
           <div className="eyebrow">{data ? `${titles.length} sur ${data.titles.length}` : '…'}</div>
           <h1>Bibliothèque</h1>
         </div>
-        <Link to="/recherche" className="btn primary">
-          Ajouter
-        </Link>
+        <Link to="/recherche" className="btn primary">Ajouter</Link>
       </div>
-      <LibraryToolbar filters={filters} onChange={update} titles={data?.titles ?? []} tags={data?.tags ?? []} />
+      <LibraryToolbar filters={filters} onChange={setFilters} titles={data?.titles ?? []} tags={data?.tags ?? []} />
       {data && titles.length === 0 && <p className="muted empty">Aucun titre ne correspond à ces filtres.</p>}
       <div className="grid">
         <AnimatePresence mode="popLayout">
-          {titles.map((t) => (
-            <TitleCard key={t.id} {...t} entries={t.entries} />
-          ))}
+          {titles.map((t) => <TitleCard key={t.id} {...t} entries={t.entries} />)}
         </AnimatePresence>
       </div>
     </div>

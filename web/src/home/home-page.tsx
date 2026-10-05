@@ -46,38 +46,49 @@ function DiscoverRail({ kind }: { kind: Kind }): ReactElement {
   );
 }
 
-export function HomePage(): ReactElement {
+function greeting(name: string): string {
+  const h = new Date().getHours();
+  return `${h >= 18 || h < 5 ? 'Bonsoir' : 'Bonjour'} ${name}`;
+}
+
+function EmptyHome(): ReactElement {
+  return (
+    <div className="card empty-home">
+      <h2>Votre bibliothèque est vide.</h2>
+      <p className="muted">Cherche un premier titre avec <kbd>/</kbd> et ajoute-le à ta liste.</p>
+      <Link className="btn primary" to="/recherche">Chercher un titre</Link>
+    </div>
+  );
+}
+
+function OurRails({ titles }: { titles: LibraryTitle[] }): ReactElement {
   const { me, users } = useSession();
   const other = users.find((u) => u.id !== me.id);
+  const has = (t: LibraryTitle, id: number): boolean => t.entries.some((e) => e.userId === id);
+  const mine = (s: string): LibraryTitle[] =>
+    titles.filter((t) => t.entries.some((e) => e.userId === me.id && e.status === s));
+  const together = titles.filter((t) => t.entries.length > 1 && t.entries.every((e) => e.status === 'a_voir'));
+  const fromOther = other ? titles.filter((t) => has(t, other.id) && !has(t, me.id)) : [];
+  return (
+    <>
+      <LibraryRail title="Je reprends" eyebrow={greeting(me.name)} items={mine('en_cours')} />
+      <LibraryRail title="À voir ensemble" items={together} />
+      <LibraryRail title="Ma liste" items={mine('a_voir')} />
+      {other && <LibraryRail title={`Dans la liste de ${other.name}`} items={fromOther} />}
+    </>
+  );
+}
+
+export function HomePage(): ReactElement {
   const { data: lib } = useLibrary();
   const { data: trending } = useApi<{ results: Card[] }>('/api/tmdb/trending');
-  const titles = lib?.titles ?? [];
-  const mine = (s: string) => titles.filter((t) => t.entries.some((e) => e.userId === me.id && e.status === s));
-  const together = titles.filter((t) => t.entries.length > 1 && t.entries.every((e) => e.status === 'a_voir'));
-  const fromOther = other
-    ? titles.filter((t) => t.entries.some((e) => e.userId === other.id) && !t.entries.some((e) => e.userId === me.id))
-    : [];
   const featured = trending?.results.find((c) => c.backdrop);
-
   return (
     <>
       {featured ? <Hero card={featured} eyebrow="Tendance de la semaine" /> : <div className="hero skeleton" />}
       <div className="page home">
-        <LibraryRail title="Je reprends" eyebrow={`Bonsoir ${me.name}`} items={mine('en_cours')} />
-        <LibraryRail title="À voir ensemble" items={together} />
-        <LibraryRail title="Ma liste" items={mine('a_voir')} />
-        {other && <LibraryRail title={`Dans la liste de ${other.name}`} items={fromOther} />}
-        {titles.length === 0 && lib && (
-          <div className="card empty-home">
-            <h2>Votre bibliothèque est vide.</h2>
-            <p className="muted">
-              Cherche un premier titre avec <kbd>/</kbd> et ajoute-le à ta liste.
-            </p>
-            <Link className="btn primary" to="/recherche">
-              Chercher un titre
-            </Link>
-          </div>
-        )}
+        <OurRails titles={lib?.titles ?? []} />
+        {lib && lib.titles.length === 0 && <EmptyHome />}
         <DiscoverRail kind="film" />
         <DiscoverRail kind="serie" />
         <DiscoverRail kind="anime" />

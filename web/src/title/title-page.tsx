@@ -19,12 +19,27 @@ import { useTitleState } from './use-title-state';
 function Recommendations({ d, type }: { d: Details; type: MediaType }): ReactElement | null {
   const recs = (d.recommendations?.results ?? []).map((r) => toKind(r, type)).filter((c): c is Card => c !== null);
   if (!recs.length) return null;
+  return <Rail title="Dans la même veine">{recs.slice(0, 16).map((c) => <TitleCard key={c.id} {...c} />)}</Rail>;
+}
+
+function Body({ d, type, id }: { d: Details; type: MediaType; id: number }): ReactElement {
+  const t = useTitleState(type, id);
+  const [draft, setDraft] = useState<Draft>(null);
+  const kind = toKind({ ...d, genre_ids: d.genres.map((g) => g.id), media_type: type }, type)?.kind ?? 'film';
+  const isTv = type === 'tv';
   return (
-    <Rail title="Dans la même veine">
-      {recs.slice(0, 16).map((c) => (
-        <TitleCard key={c.id} {...c} />
-      ))}
-    </Rail>
+    <>
+      <TitleHero d={d} kind={kind}>
+        <MyEntry t={t} original={d.original_language} available={translationLangs(d)} />
+      </TitleHero>
+      <div className="page title-page">
+        {isTv ? <SeasonsPanel d={d} t={t} onMoment={setDraft} /> : <MovieCheckpoint t={t} />}
+        <NotesPanel t={t} isTv={isTv} original={d.original_language} draft={draft} clearDraft={() => setDraft(null)} />
+        <LanguagesPanel d={d} />
+        <CastRail d={d} />
+        <Recommendations d={d} type={type} />
+      </div>
+    </>
   );
 }
 
@@ -32,36 +47,8 @@ export function TitlePage(): ReactElement {
   const params = useParams();
   const type: MediaType = params.type === 'tv' ? 'tv' : 'movie';
   const id = Number(params.id);
-  const { data: d, error } = useApi<Details>(`/api/tmdb/title/${type}/${id}`);
-  const t = useTitleState(type, id);
-  const [draft, setDraft] = useState<Draft>(null);
-  if (error)
-    return (
-      <div className="page">
-        <p className="error">{error}</p>
-      </div>
-    );
-  if (!d) return <div className="th skeleton" />;
-  const kind = toKind({ ...d, genre_ids: d.genres.map((g) => g.id), media_type: type }, type)?.kind ?? 'film';
-
-  return (
-    <>
-      <TitleHero d={d} kind={kind}>
-        <MyEntry t={t} original={d.original_language} available={translationLangs(d)} />
-      </TitleHero>
-      <div className="page title-page">
-        {type === 'tv' ? <SeasonsPanel d={d} t={t} onMoment={setDraft} /> : <MovieCheckpoint t={t} />}
-        <NotesPanel
-          t={t}
-          isTv={type === 'tv'}
-          original={d.original_language}
-          draft={draft}
-          clearDraft={() => setDraft(null)}
-        />
-        <LanguagesPanel d={d} />
-        <CastRail d={d} />
-        <Recommendations d={d} type={type} />
-      </div>
-    </>
-  );
+  const { data, error } = useApi<Details>(`/api/tmdb/title/${type}/${id}`);
+  if (error) return <div className="page"><p className="error">{error}</p></div>;
+  if (!data) return <div className="th skeleton" />;
+  return <Body key={`${type}:${id}`} d={data} type={type} id={id} />;
 }

@@ -2,6 +2,7 @@
 import { motion } from 'framer-motion';
 import { useState, type FormEvent, type ReactElement } from 'react';
 import { send } from '../shared/api';
+import { LabeledField } from '../shared/labeled-field';
 
 function useLogin(onDone: () => void) {
   const [name, setName] = useState('');
@@ -25,52 +26,23 @@ function useLogin(onDone: () => void) {
   return { name, setName, password, setPassword, error, busy, submit };
 }
 
+const ENTER = { initial: { opacity: 0, y: 24 }, animate: { opacity: 1, y: 0 },
+  transition: { duration: 0.7, ease: [0.22, 1, 0.36, 1] as const } };
+
 export function LoginPage({ onDone }: { onDone: () => void }): ReactElement {
   const { name, setName, password, setPassword, error, busy, submit } = useLogin(onDone);
   return (
     <div className="login">
       <div className="login-glow" aria-hidden />
-      <motion.form
-        onSubmit={submit}
-        className="login-card"
-        initial={{ opacity: 0, y: 24 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-      >
-        <div className="brand serif big">
-          Flux<span>Tube</span>
-        </div>
+      <motion.form onSubmit={submit} className="login-card" {...ENTER}>
+        <div className="brand serif big">Flux<span>Tube</span></div>
         <p className="muted">Nos films, nos séries, nos animés. Et où on en est.</p>
-        <div>
-          <label className="label" htmlFor="name">
-            Nom d'utilisateur
-          </label>
-          <input
-            id="name"
-            className="field"
-            autoComplete="username"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            autoFocus
-          />
-        </div>
-        <div>
-          <label className="label" htmlFor="password">
-            Mot de passe
-          </label>
-          <input
-            id="password"
-            type="password"
-            className="field"
-            autoComplete="current-password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
-        </div>
+        <LabeledField id="name" label="Nom d'utilisateur" autoComplete="username" value={name}
+          onChange={setName} autoFocus />
+        <LabeledField id="password" label="Mot de passe" type="password" autoComplete="current-password"
+          value={password} onChange={setPassword} />
         {error && <div className="error">{error}</div>}
-        <button className="btn primary" disabled={busy || !name || !password}>
-          {busy ? 'Connexion…' : 'Entrer'}
-        </button>
+        <button className="btn primary" disabled={busy || !name || !password}>{busy ? 'Connexion…' : 'Entrer'}</button>
       </motion.form>
     </div>
   );

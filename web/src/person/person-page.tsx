@@ -3,7 +3,7 @@ import { AnimatePresence } from 'framer-motion';
 import { useMemo, useState, type ReactElement } from 'react';
 import { useParams } from 'react-router';
 import { toKind } from '../shared/kind';
-import { KIND_PLURAL } from '../shared/labels';
+import { KIND_OPTIONS } from '../shared/labels';
 import { Poster } from '../shared/poster';
 import { Segmented } from '../shared/segmented';
 import { TitleCard } from '../shared/title-card';
@@ -77,38 +77,21 @@ export function PersonPage(): ReactElement {
   const { data: lib } = useLibrary();
   const [kind, setKind] = useState<'all' | Kind>('all');
   const lines = useMemo(() => (p ? credits(p) : []), [p]);
-  if (!p)
-    return (
-      <div className="page">
-        <div className="skeleton" style={{ height: 320, borderRadius: 14 }} />
-      </div>
-    );
+  if (!p) return <div className="page"><div className="skeleton" style={{ height: 320, borderRadius: 14 }} /></div>;
   const entries = new Map(lib?.titles.map((t) => [t.id, t.entries]));
   const shown = lines.filter((l) => kind === 'all' || l.kind === kind);
-
   return (
     <div className="page person">
       <PersonHead p={p} total={lines.length} owned={lines.filter((l) => entries.has(l.id)).length} />
       <div className="section-head section">
         <h2>Filmographie</h2>
-        <Segmented
-          options={[
-            { value: 'all', label: 'Tout' },
-            ...(['film', 'serie', 'anime'] as const).map((k) => ({ value: k, label: KIND_PLURAL[k] })),
-          ]}
-          value={kind}
-          onChange={setKind}
-        />
+        <Segmented options={KIND_OPTIONS} value={kind} onChange={setKind} />
       </div>
       <div className="grid">
         <AnimatePresence mode="popLayout">
           {shown.map((l) => (
-            <TitleCard
-              key={l.id}
-              {...l}
-              entries={entries.get(l.id)}
-              hint={[l.year, l.role].filter(Boolean).join(' · ')}
-            />
+            <TitleCard key={l.id} {...l} entries={entries.get(l.id)}
+              hint={[l.year, l.role].filter(Boolean).join(' · ')} />
           ))}
         </AnimatePresence>
       </div>
