@@ -78,6 +78,10 @@ export function updateEntry(
   }
 }
 
+export function hasEntry(titleId: string, userId: number): boolean {
+  return Boolean(db.query('SELECT 1 FROM title_users WHERE title_id = ? AND user_id = ?').get(titleId, userId));
+}
+
 export function leave(titleId: string, userId: number): void {
   db.query('DELETE FROM title_users WHERE title_id = ? AND user_id = ?').run(titleId, userId);
   db.query('DELETE FROM titles WHERE id = ? AND NOT EXISTS (SELECT 1 FROM title_users WHERE title_id = ?)').run(

@@ -79,5 +79,10 @@ export type Rec = Card & { reason: string };
 
 export type TasteHome = {
   forYou: Rec[]; duo: Rec[]; because: { id: string; name: string; items: Rec[] }[];
-  rated: number; needsOnboarding: boolean; computing: boolean; computedAt: number | null;
+  rated: number; needsOnboarding: boolean; computing: boolean; computedAt: number | null; partnerId: number | null;
+};
+
+export type Suggestion = {
+  id: number; titleId: string; card: Card; fromUser: number; toUser: number; message: string | null;
+  status: 'pending' | 'accepted' | 'dismissed'; createdAt: number;
 };

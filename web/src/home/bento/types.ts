@@ -17,6 +17,7 @@ export type Dashboard = {
     watched: number;
   } | null;
   tonight: Rec | null;
+  partnerId: number | null;
   week: { episodes: number; films: number };
   other: { titleId: string; userId: number; label: string; at: number } | null;
   taste: { genres: string[]; version: string | null };

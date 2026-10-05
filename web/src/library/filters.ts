@@ -1,7 +1,8 @@
 /** Filtrage et tri de la bibliothèque, sans dépendance à l'interface. */
 import type { Kind, LibraryTitle, Status } from '../shared/types';
 
-export type Who = 'all' | 'me' | 'other' | 'both';
+/** Tout le monde, moi, une personne précise (« u:<id> »), ou les titres suivis par plusieurs personnes. */
+export type Who = 'all' | 'me' | 'both' | `u:${number}`;
 export type Sort = 'recent' | 'name' | 'year' | 'rating';
 
 export type Filters = {
@@ -22,22 +23,22 @@ export const DEFAULT_FILTERS: Filters = {
   sort: 'recent',
 };
 
+/** Personne visée par le filtre (moi ou « u:<id> »), ou null pour plusieurs personnes. */
+function personOf(who: Who, me: number): number | null {
+  if (who === 'me') return me;
+  return who.startsWith('u:') ? Number(who.slice(2)) : null;
+}
+
 function matchWho(t: LibraryTitle, who: Who, me: number): boolean {
-  const ids = t.entries.map((e) => e.userId);
-  if (who === 'me') return ids.includes(me);
-  if (who === 'other') return ids.some((id) => id !== me);
-  if (who === 'both') return ids.length > 1;
-  return true;
+  const person = personOf(who, me);
+  if (person !== null) return t.entries.some((e) => e.userId === person);
+  return who === 'both' ? t.entries.length > 1 : true;
 }
 
 function matchStatus(t: LibraryTitle, f: Filters, me: number): boolean {
   if (f.status === 'all') return true;
-  const scope =
-    f.who === 'other'
-      ? t.entries.filter((e) => e.userId !== me)
-      : f.who === 'me'
-        ? t.entries.filter((e) => e.userId === me)
-        : t.entries;
+  const person = personOf(f.who, me);
+  const scope = person === null ? t.entries : t.entries.filter((e) => e.userId === person);
   return scope.some((e) => e.status === f.status);
 }
 

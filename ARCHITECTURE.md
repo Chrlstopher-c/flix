@@ -8,12 +8,13 @@ Monolithe modulaire : un serveur Bun sert l'API, les images et le front compilé
 |---|---|
 | `common/` | Règles métier partagées serveur + front (classification film / série / animé). Seule source de vérité. |
 | `server/core/` | Transverse : env, base SQLite + schéma, logs, helpers HTTP. Aucune logique métier. |
-| `server/auth/` | Comptes, sessions par cookie, réglages (nom, mot de passe). |
+| `server/auth/` | Comptes, sessions par cookie, inscription sur clé d'invitation (`app_settings`), limiteur de tentatives, réglages. |
 | `server/tmdb/` | Accès TMDB avec cache SQLite, proxy d'images avec copie disque, routes catalogue. |
 | `server/library/` | Ce que nous faisons des titres : fiches locales, statut par personne, étiquettes, avis et moments. |
 | `server/progress/` | Où chacun en est : points d'arrêt et épisodes cochés. |
 | `server/dashboard/` | Tableau de bord de l'accueil (grille bento) : agrège bibliothèque, progression, notes et goûts. Lecture seule. |
 | `server/mcp/` | Serveur MCP (HTTP streamable, sans session) : clés par compte (hachées), outils lecture/écriture limités au compte de la clé, recommandations perso + duo en lecture. |
+| `server/suggestions/` | Suggestions entre comptes (« ça pourrait te plaire » + mot) : vignette figée, en attente jusqu'à ajout ou refus, signal faible pour les goûts du destinataire. |
 | `server/taste/` | Goûts et recommandations : traits des titres, profils par personne et duo, candidats, classement, calcul de fond. |
 | `web/src/app/` | Montage, routage, navigation. |
 | `web/src/shared/` | Design system (CSS, composants génériques), client API, utilitaires de langue et libellés. |
@@ -33,7 +34,7 @@ Monolithe modulaire : un serveur Bun sert l'API, les images et le front compilé
 2. **Poids d'un suivi** : la note prime (`(note − 5) / 2,5`), sinon le statut (vu 1, en cours 0,8, à voir 0,35),
    abandon −1,5, +0,1 par note écrite.
 3. **Profil** = somme pondérée des traits (normalisée par la taille du titre, échelle par type de trait).
-4. **Duo** : moyenne des deux profils moins la moitié de l'écart, le rejet de l'un l'emporte, bonus des titres vus
+4. **Duo** (un par paire de comptes, `duo:<a>-<b>` ; partenaire choisi dans l'accueil, sinon celui avec qui on partage le plus) : moyenne des deux profils moins la moitié de l'écart, le rejet de l'un l'emporte, bonus des titres vus
    ensemble (deux ajouts à moins de 15 min sur un titre vu).
 5. **Candidats** : recommandations TMDB des 12 titres les plus aimés + populaires des 3 genres favoris.
 6. **Classement** : proximité au profil + soutien des titres sources + note TMDB, diversité (raison et source),

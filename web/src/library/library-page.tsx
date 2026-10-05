@@ -11,7 +11,9 @@ import { LibraryToolbar } from './library-toolbar';
 function loadFilters(): Filters {
   try {
     const saved = JSON.parse(sessionStorage.getItem('ft-filters') ?? '{}') as Partial<Filters>; // posé par useFilters
-    return { ...DEFAULT_FILTERS, ...saved };
+    const merged = { ...DEFAULT_FILTERS, ...saved };
+    // anciennes valeurs (« other ») d'avant le passage à plusieurs comptes
+    return /^(all|me|both|u:\d+)$/.test(merged.who) ? merged : { ...merged, who: 'all' };
   } catch {
     return DEFAULT_FILTERS;
   }

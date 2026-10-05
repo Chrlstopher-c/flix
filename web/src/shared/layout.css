@@ -127,3 +127,5 @@ select.chip option { background: var(--bg-raise); color: var(--text); }
 .spinner { width: 28px; height: 28px; border-radius: 50%; box-shadow: var(--inset-sm);
   border: 3px solid transparent; border-top-color: var(--accent); animation: spin 0.9s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
+.signup-fields { gap: 18px; overflow: hidden; }
+.login-card .switch-mode { justify-content: center; margin-top: -6px; }

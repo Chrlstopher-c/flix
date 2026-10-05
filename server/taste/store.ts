@@ -1,6 +1,11 @@
 /** Résultats de recommandation calculés à l'avance, lus instantanément par l'accueil. */
 import { db } from '../core/db';
 
+/** Portée de stockage d'un duo : même clé quel que soit l'ordre des deux personnes. */
+export function duoScope(a: number, b: number): string {
+  return `duo:${Math.min(a, b)}-${Math.max(a, b)}`;
+}
+
 export function saveResult(scope: string, body: unknown): void {
   db.query('INSERT OR REPLACE INTO taste_results (scope, body, computed_at) VALUES (?, ?, ?)').run(
     scope,

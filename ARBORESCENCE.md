@@ -12,8 +12,11 @@
 - `pnpm-lock.yaml`
 - `README.md`
 - `restart.sh`
+- `server/auth/limiter.test.ts`
+- `server/auth/limiter.ts`
 - `server/auth/routes.ts`
 - `server/auth/settings.ts`
+- `server/auth/signup.ts`
 - `server/auth/users.ts`
 - `server/core/concurrency.ts`
 - `server/core/db.ts`
@@ -36,13 +39,17 @@
 - `server/mcp/tokens.ts`
 - `server/mcp/tool-kit.ts`
 - `server/mcp/tools-read.ts`
+- `server/mcp/tools-social.ts`
 - `server/mcp/tools-write.ts`
 - `server/progress/progress.ts`
+- `server/suggestions/routes.ts`
+- `server/suggestions/store.ts`
 - `server/taste/candidates.ts`
 - `server/taste/engine.ts`
 - `server/taste/models.test.ts`
 - `server/taste/models.ts`
 - `server/taste/onboarding.ts`
+- `server/taste/partner.ts`
 - `server/taste/profile.test.ts`
 - `server/taste/profile.ts`
 - `server/taste/rank.test.ts`
@@ -83,6 +90,7 @@
 - `web/src/home/discover.tsx`
 - `web/src/home/hero.tsx`
 - `web/src/home/home-page.tsx`
+- `web/src/home/suggestions-rail.tsx`
 - `web/src/home/taste-rails.tsx`
 - `web/src/home/use-taste.ts`
 - `web/src/library/filters.test.ts`
@@ -94,6 +102,7 @@
 - `web/src/onboarding/pick-card.tsx`
 - `web/src/person/person-page.tsx`
 - `web/src/search/search-page.tsx`
+- `web/src/settings/invite-card.tsx`
 - `web/src/settings/mcp-card.tsx`
 - `web/src/settings/settings-page.tsx`
 - `web/src/shared/api.ts`
@@ -117,6 +126,7 @@
 - `web/src/shared/use-debounced.ts`
 - `web/src/shared/use-infinite.ts`
 - `web/src/shared/use-library.ts`
+- `web/src/shared/use-partner.ts`
 - `web/src/title/cast-rail.tsx`
 - `web/src/title/checkpoint.tsx`
 - `web/src/title/episode-row.tsx`
@@ -126,6 +136,7 @@
 - `web/src/title/notes-panel.tsx`
 - `web/src/title/rating.tsx`
 - `web/src/title/seasons-panel.tsx`
+- `web/src/title/suggest-panel.tsx`
 - `web/src/title/tag-editor.tsx`
 - `web/src/title/title-hero.tsx`
 - `web/src/title/title-page.tsx`

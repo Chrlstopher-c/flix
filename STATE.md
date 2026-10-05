@@ -23,5 +23,11 @@
 - MCP intégré : clé par compte dans Réglages, 12 outils (recherche, fiche, bibliothèque, écriture, recos perso + duo).
 - Recalcul des goûts 20 s après la dernière modification (au plus 60 s), langue originale par défaut, défilement infini.
 
+## 2026-10-05 — Cercle d'amis
+- Inscription par clé d'invitation (créée au 1er démarrage, visible et renouvelable dans Réglages, lien `/?invite=`).
+- Plusieurs comptes : duo calculé pour chaque paire, sélecteur de partenaire sur l'accueil, filtres par personne.
+- Suggestions : bouton « Suggérer à… » sur les fiches, rangée « Suggéré pour toi », outils MCP `my_suggestions` /
+  `suggest_title`. Limiteur : 10 échecs de connexion/inscription par IP et par quart d'heure.
+
 ## Suite
 Voir TODO.md.

@@ -4,6 +4,7 @@ import { Link } from 'react-router';
 import { img } from '../../shared/api';
 import { formatTime } from '../../shared/labels';
 import { Poster } from '../../shared/poster';
+import type { User } from '../../shared/types';
 import { titleLink, type Dashboard } from './types';
 
 export function ResumeTile({ r }: { r: Dashboard['resume'] }): ReactElement {
@@ -41,11 +42,12 @@ export function ResumeTile({ r }: { r: Dashboard['resume'] }): ReactElement {
   );
 }
 
-export function TonightTile({ rec }: { rec: Dashboard['tonight'] }): ReactElement {
+export function TonightTile({ rec, partner }: { rec: Dashboard['tonight']; partner?: User }): ReactElement {
+  const eyebrow = partner ? `Ce soir, avec ${partner.name}` : 'Ce soir, ensemble';
   if (!rec) {
     return (
       <article className="tile t-tonight empty-tile">
-        <div className="eyebrow">Ce soir, ensemble</div>
+        <div className="eyebrow">{eyebrow}</div>
         <p className="faint">Notez quelques titres chacun : le choix commun apparaîtra ici.</p>
       </article>
     );
@@ -55,7 +57,7 @@ export function TonightTile({ rec }: { rec: Dashboard['tonight'] }): ReactElemen
       <div className="t-poster">
         <Poster path={rec.poster} size="w500" alt={rec.name} />
       </div>
-      <div className="eyebrow">Ce soir, ensemble</div>
+      <div className="eyebrow">{eyebrow}</div>
       <h3>{rec.name}</h3>
       <p className="faint">{rec.reason}</p>
     </Link>

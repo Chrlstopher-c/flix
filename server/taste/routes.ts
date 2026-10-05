@@ -6,18 +6,21 @@ import { listLibrary } from '../library/queries';
 import type { TasteResult } from './engine';
 import { onboardingCards } from './onboarding';
 import { isComputing, runNow } from './scheduler';
-import { readResult } from './store';
+import { partnerOf } from './partner';
+import { duoScope, readResult } from './store';
 
 const ONBOARDING_MIN = 5;
 
-function home(user: User): Response {
+function home(user: User, url: URL): Response {
   const mine = readResult<TasteResult>(`user:${user.id}`);
-  const duo = readResult<TasteResult>('duo');
+  const partner = partnerOf(user, Number(url.searchParams.get('with')) || null);
+  const duo = partner ? readResult<TasteResult>(duoScope(user.id, partner.id)) : null;
   const rated = mine?.body.rated ?? 0;
   return json({
     forYou: mine?.body.forYou ?? [],
     because: mine?.body.because ?? [],
     duo: duo?.body.forYou ?? [],
+    partnerId: partner?.id ?? null,
     rated,
     needsOnboarding: rated < ONBOARDING_MIN,
     computing: isComputing(),
@@ -28,7 +31,7 @@ function home(user: User): Response {
 export async function tasteRoutes(req: Request, path: string, user: User): Promise<Response | null> {
   if (!path.startsWith('/api/taste/')) return null;
   try {
-    if (path === '/api/taste/home') return home(user);
+    if (path === '/api/taste/home') return home(user, new URL(req.url));
     if (path === '/api/taste/refresh' && req.method === 'POST') {
       void runNow();
       return json({ computing: true }, 202);

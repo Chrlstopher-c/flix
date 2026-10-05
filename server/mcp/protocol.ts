@@ -4,11 +4,12 @@ import { log } from '../core/logger';
 import { markDirty } from '../taste/scheduler';
 import { ToolError, type Tool } from './tool-kit';
 import { READ_TOOLS } from './tools-read';
+import { SOCIAL_TOOLS } from './tools-social';
 import { WRITE_TOOLS } from './tools-write';
 
-const TOOLS: Tool[] = [...READ_TOOLS, ...WRITE_TOOLS];
+const TOOLS: Tool[] = [...READ_TOOLS, ...SOCIAL_TOOLS, ...WRITE_TOOLS];
 const VERSIONS = ['2025-06-18', '2025-03-26', '2024-11-05'];
-const INSTRUCTIONS = `Flix : bibliothèque de films, séries et animés partagée par deux personnes.
+const INSTRUCTIONS = `Flix : bibliothèque de films, séries et animés partagée entre amis.
 Tu agis uniquement sur le compte de la personne qui t'a donné la clé. Utilise search_titles pour obtenir
 media_type et tmdb_id avant toute action. Les recommandations se recalculent dans la minute qui suit une modification.`;
 

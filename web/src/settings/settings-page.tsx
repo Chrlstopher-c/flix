@@ -3,6 +3,7 @@ import { useState, type FormEvent, type ReactElement } from 'react';
 import { useSession } from '../auth/session';
 import { send } from '../shared/api';
 import { LabeledField } from '../shared/labeled-field';
+import { InviteCard } from './invite-card';
 import { McpCard } from './mcp-card';
 import { Segmented } from '../shared/segmented';
 import { currentTheme, setTheme, type Theme } from '../shared/theme';
@@ -99,6 +100,7 @@ export function SettingsPage(): ReactElement {
         <NameForm />
         <PasswordForm />
         <ThemeCard />
+        <InviteCard />
         <McpCard />
         <div className="card stack">
           <h3>Session</h3>

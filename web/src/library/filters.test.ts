@@ -36,6 +36,10 @@ test('filtre par personne et statut', () => {
   ]);
 });
 
+test('filtre sur une personne précise', () => {
+  expect(applyFilters([base, other], { ...DEFAULT_FILTERS, who: 'u:2' }, 1).map((t) => t.id)).toEqual(['movie:2']);
+});
+
 test('les langues incluent celles de visionnage', () => {
   expect(titleLanguages(base)).toEqual(['ja', 'fr']);
   expect(applyFilters([base, other], { ...DEFAULT_FILTERS, lang: 'it' }, 1).map((t) => t.id)).toEqual(['movie:2']);

@@ -5,13 +5,13 @@ import type { TasteHome } from '../shared/types';
 
 const POLL_MS = 3000;
 
-export function useTaste(): TasteHome | undefined {
+export function useTaste(partner: number | null): TasteHome | undefined {
   const [data, setData] = useState<TasteHome | undefined>(undefined);
   useEffect(() => {
     let alive = true;
     let timer: ReturnType<typeof setTimeout> | undefined;
     const load = (): void => {
-      get<TasteHome>('/api/taste/home')
+      get<TasteHome>(`/api/taste/home${partner ? `?with=${partner}` : ''}`)
         .then((d) => {
           if (!alive) return;
           setData(d);
@@ -24,6 +24,6 @@ export function useTaste(): TasteHome | undefined {
       alive = false;
       clearTimeout(timer);
     };
-  }, []);
+  }, [partner]);
   return data;
 }

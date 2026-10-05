@@ -6,10 +6,11 @@ import { ResumeTile, TonightTile } from './tiles-main';
 import { MomentTile, NextTile, OtherTile, TasteTile, WeekTile } from './tiles-small';
 import type { Dashboard } from './types';
 
-export function Bento(): ReactElement {
+export function Bento({ partner }: { partner: number | null }): ReactElement {
   const { me, users } = useSession();
-  const { data } = useApi<Dashboard>('/api/dashboard');
-  const other = users.find((u) => u.id !== me.id);
+  const { data } = useApi<Dashboard>(`/api/dashboard${partner ? `?with=${partner}` : ''}`);
+  const other = users.find((u) => u.id === data?.other?.userId) ?? users.find((u) => u.id !== me.id);
+  const duoWith = users.find((u) => u.id === data?.partnerId);
   if (!data)
     return (
       <section className="bento">
@@ -21,7 +22,7 @@ export function Bento(): ReactElement {
   return (
     <section className="bento" aria-label="Tableau de bord">
       <ResumeTile r={data.resume} />
-      <TonightTile rec={data.tonight} />
+      <TonightTile rec={data.tonight} partner={duoWith} />
       <WeekTile w={data.week} />
       {other && <OtherTile d={data} other={other} />}
       <TasteTile taste={data.taste} />

@@ -64,6 +64,15 @@ CREATE TABLE IF NOT EXISTS watched_episodes (
   PRIMARY KEY (title_id, user_id, season, episode)
 );
 CREATE INDEX IF NOT EXISTS notes_title ON notes(title_id);
+CREATE TABLE IF NOT EXISTS suggestions (
+  id INTEGER PRIMARY KEY, title_id TEXT NOT NULL, card TEXT NOT NULL,
+  from_user INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  to_user INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  message TEXT, status TEXT NOT NULL DEFAULT 'pending', created_at INTEGER NOT NULL,
+  UNIQUE (title_id, from_user, to_user)
+);
+CREATE INDEX IF NOT EXISTS suggestions_to ON suggestions(to_user, status);
+CREATE TABLE IF NOT EXISTS app_settings (key TEXT PRIMARY KEY, value TEXT NOT NULL);
 CREATE TABLE IF NOT EXISTS mcp_tokens (
   user_id INTEGER PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE, token_hash TEXT UNIQUE NOT NULL,
   created_at INTEGER NOT NULL, last_used_at INTEGER

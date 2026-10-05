@@ -1,4 +1,4 @@
-/** Comptes et sessions : deux personnes, mot de passe, cookie de session. */
+/** Comptes et sessions : nom d'utilisateur, mot de passe, cookie de session. */
 import { randomBytes } from 'node:crypto';
 import { db } from '../core/db';
 import { ENV } from '../core/env';
@@ -6,7 +6,7 @@ import { log } from '../core/logger';
 
 export type User = { id: number; name: string; color: string };
 
-const COLORS = ['#ff8a5c', '#7cc4ff', '#c79bff', '#7fe0a8'];
+export const COLORS = ['#ff8a5c', '#7cc4ff', '#c79bff', '#7fe0a8', '#ffd166', '#ff6b9a', '#5ce1e6', '#b5e48c'];
 const SESSION_DAYS = 180;
 export const COOKIE = 'ft_session';
 const SECURE = process.env.NODE_ENV === 'production' ? '; Secure' : '';
@@ -34,15 +34,20 @@ export function listUsers(): User[] {
   return db.query('SELECT id, name, color FROM users ORDER BY id').all() as User[]; // colonnes du SELECT = User
 }
 
+/** Crée une session pour un compte et rend son jeton. */
+export function openSession(userId: number): string {
+  const token = randomBytes(32).toString('base64url');
+  db.query('INSERT INTO sessions (token, user_id, created_at) VALUES (?, ?, ?)').run(token, userId, Date.now());
+  return token;
+}
+
 export async function login(name: string, password: string): Promise<string | null> {
   const row = db.query('SELECT id, password_hash FROM users WHERE name = ?').get(name) as {
     id: number;
     password_hash: string;
   } | null; // colonnes du SELECT
   if (!row || !(await Bun.password.verify(password, row.password_hash))) return null;
-  const token = randomBytes(32).toString('base64url');
-  db.query('INSERT INTO sessions (token, user_id, created_at) VALUES (?, ?, ?)').run(token, row.id, Date.now());
-  return token;
+  return openSession(row.id);
 }
 
 export function logout(token: string): void {

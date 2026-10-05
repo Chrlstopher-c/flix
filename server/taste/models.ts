@@ -8,11 +8,15 @@ export type LibEntry = { userId: number; status: string; rating: number | null; 
 export type LibTitle = { id: string; entries: LibEntry[] };
 export type Model = { liked: Liked[]; profile: Profile; exclude: Set<string>; rated: number };
 
+/** Titres suggérés par d'autres : léger signal positif, et exclus des recommandations (ils ont leur propre rangée). */
+export type Suggested = { traits: Traits; senders: number };
+
 export function userModel(
   user: User,
   titles: LibTitle[],
   traits: Map<string, Traits>,
   notes: Map<string, number>,
+  suggested: Suggested[] = [],
 ): Model {
   const liked: Liked[] = [];
   const exclude = new Set<string>();
@@ -24,6 +28,11 @@ export function userModel(
     exclude.add(t.id);
     if (e.status === 'vu' || e.status === 'abandonne' || e.rating !== null) rated++;
     if (tr) liked.push({ traits: tr, weight: entryWeight({ ...e, notes: notes.get(`${t.id}|${user.id}`) ?? 0 }) });
+  }
+  for (const sg of suggested) {
+    if (exclude.has(sg.traits.id)) continue;
+    exclude.add(sg.traits.id);
+    liked.push({ traits: sg.traits, weight: Math.min(0.8, 0.4 * sg.senders) });
   }
   return {
     liked,

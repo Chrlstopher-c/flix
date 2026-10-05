@@ -5,9 +5,10 @@ import { log } from '../core/logger';
 import { listLibrary, noteCounts } from '../library/queries';
 import type { MediaType } from '../tmdb/kind';
 import { gather, genreNames, type Genres } from './candidates';
-import { duoModel, userModel, type LibTitle, type Model } from './models';
+import { received } from '../suggestions/store';
+import { duoModel, userModel, type LibTitle, type Model, type Suggested } from './models';
 import { rankCandidates, toRec, type Rec } from './rank';
-import { saveResult } from './store';
+import { duoScope, saveResult } from './store';
 import { loadTraits, type Traits } from './traits';
 
 export type Because = { id: string; name: string; items: Rec[] };
@@ -62,6 +63,25 @@ async function loadAllTraits(
   return traits;
 }
 
+/** Suggestions en attente de chaque personne, avec les traits des titres suggérés. */
+async function loadSuggested(users: User[]): Promise<Map<number, Suggested[]>> {
+  const out = new Map<number, Suggested[]>();
+  for (const u of users) {
+    const byTitle = new Map<string, number>();
+    for (const s of received(u.id)) byTitle.set(s.titleId, (byTitle.get(s.titleId) ?? 0) + 1);
+    const list = await mapLimit([...byTitle], 4, async ([id, senders]) => {
+      const [type, tmdbId] = id.split(':');
+      const traits = await loadTraits(type as MediaType, Number(tmdbId)); // identifiant « movie:123 »
+      return traits ? { traits, senders } : null;
+    });
+    out.set(
+      u.id,
+      list.filter((x): x is Suggested => x !== null),
+    );
+  }
+  return out;
+}
+
 export async function computeAll(): Promise<void> {
   const started = Date.now();
   const users: User[] = listUsers();
@@ -69,16 +89,19 @@ export async function computeAll(): Promise<void> {
   const library = listLibrary() as unknown as Row[]; // forme de listLibrary
   const [traits, genres] = await Promise.all([loadAllTraits(library), genreNames()]);
   const notes = noteCounts();
-  const models = users.map((u) => userModel(u, library, traits, notes));
+  const suggested = await loadSuggested(users);
+  const models = users.map((u) => userModel(u, library, traits, notes, suggested.get(u.id)));
   for (const [i, u] of users.entries()) {
     const m = models[i] as Model; // même index que users
     saveResult(`user:${u.id}`, { forYou: await refine(m, genres, false), because: because(m), rated: m.rated });
   }
-  const [a, b] = models;
-  const [ua, ub] = users;
-  if (a && b && ua && ub) {
-    const duo = duoModel(a, b, library, traits, [ua, ub]);
-    saveResult('duo', { forYou: await refine(duo, genres, true), because: [], rated: duo.rated });
+  for (let i = 0; i < users.length; i++) {
+    for (let j = i + 1; j < users.length; j++) {
+      // indices valides par construction des boucles
+      const [ua, ub, a, b] = [users[i], users[j], models[i], models[j]] as [User, User, Model, Model];
+      const duo = duoModel(a, b, library, traits, [ua, ub]);
+      saveResult(duoScope(ua.id, ub.id), { forYou: await refine(duo, genres, true), because: [], rated: duo.rated });
+    }
   }
-  log.info({ ms: Date.now() - started, titles: library.length }, 'Recommandations recalculées');
+  log.info({ ms: Date.now() - started, titles: library.length, users: users.length }, 'Recommandations recalculées');
 }

@@ -65,12 +65,12 @@ function Selects({ f, set, langs }: { f: Filters; set: (p: Partial<Filters>) => 
 
 function useWhoOptions(): { value: Who; label: string; color?: string }[] {
   const { me, users } = useSession();
-  const other = users.find((u) => u.id !== me.id);
+  const others = users.filter((u) => u.id !== me.id);
   return [
     { value: 'all', label: 'Tout le monde' },
     { value: 'me', label: 'Moi', color: me.color },
-    ...(other ? [{ value: 'other' as const, label: other.name, color: other.color }] : []),
-    { value: 'both', label: 'Nous deux' },
+    ...others.map((o) => ({ value: `u:${o.id}` as const, label: o.name, color: o.color })),
+    { value: 'both', label: 'En commun' },
   ];
 }
 

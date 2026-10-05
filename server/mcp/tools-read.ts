@@ -1,11 +1,12 @@
-/** Outils MCP en lecture : recherche, fiche, ma bibliothèque, mes recommandations, celles du duo. */
+/** Outils MCP en lecture : recherche, fiche, ma bibliothèque, mes recommandations, celles des duos. */
 import { listLibrary, titleState } from '../library/queries';
 import type { TasteResult } from '../taste/engine';
-import { readResult } from '../taste/store';
+import { listUsers } from '../auth/users';
+import { duoScope, readResult } from '../taste/store';
 import { cards, type Raw } from '../tmdb/cards';
 import { TTL, tmdb } from '../tmdb/client';
 import { fullDetails } from '../tmdb/details';
-import { schema, text, titleOf, TITLE_PROPS, type Tool } from './tool-kit';
+import { schema, text, titleOf, TITLE_PROPS, ToolError, type Tool } from './tool-kit';
 
 type Row = Record<string, unknown> & { entries: { userId: number }[] };
 
@@ -88,11 +89,21 @@ export const READ_TOOLS: Tool[] = [
   },
   {
     name: 'duo_recommendations',
-    description: 'Recommandations communes du duo (goûts mêlés des deux comptes).',
-    inputSchema: schema({}),
-    run: async () => {
-      const r = readResult<TasteResult>('duo');
-      return r ? { computed_at: new Date(r.computedAt).toISOString(), for_both: r.body.forYou.map(compact) } : null;
+    description:
+      'Recommandations communes avec une autre personne (goûts mêlés). Sans « with », pour chaque personne.',
+    inputSchema: schema({ with: { type: 'string', description: 'Nom de l’autre personne (facultatif)' } }),
+    run: async (a, user) => {
+      const wanted = text(a, 'with')?.toLowerCase();
+      const others = listUsers().filter((u) => u.id !== user.id && (!wanted || u.name.toLowerCase() === wanted));
+      if (wanted && !others.length) throw new ToolError(`Personne inconnue : ${wanted}`);
+      return others.map((o) => {
+        const r = readResult<TasteResult>(duoScope(user.id, o.id));
+        return {
+          with: o.name,
+          computed_at: r && new Date(r.computedAt).toISOString(),
+          for_both: r?.body.forYou.map(compact) ?? [],
+        };
+      });
     },
   },
 ];

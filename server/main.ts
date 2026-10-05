@@ -1,5 +1,6 @@
 /** Point d'entrée : API, images, front compilé. */
 import { authRoutes } from './auth/routes';
+import { ensureInviteKey } from './auth/signup';
 import { seedUsers, userFromRequest } from './auth/users';
 import { ENV } from './core/env';
 import { fail } from './core/http';
@@ -8,6 +9,7 @@ import { dashboardRoutes } from './dashboard/routes';
 import { migrateDefaultLanguages } from './library/entries';
 import { libraryRoutes } from './library/routes';
 import { mcpEndpoint, mcpSettingsRoutes } from './mcp/routes';
+import { suggestionRoutes } from './suggestions/routes';
 import { tasteRoutes } from './taste/routes';
 import { markDirty, startScheduler } from './taste/scheduler';
 import { pruneCache } from './tmdb/client';
@@ -55,13 +57,15 @@ async function route(req: Request): Promise<Response> {
   return (
     (await tmdbRoutes(url, path)) ??
     (await tasteRoutes(req, path, user)) ??
-    (await dashboardRoutes(path, user)) ??
+    (await dashboardRoutes(req, path, user)) ??
+    (await suggestionRoutes(req, path, user)) ??
     mcpSettingsRoutes(req, path, user) ??
     fail(404, 'Route inconnue')
   );
 }
 
 seedUsers();
+ensureInviteKey();
 const migrated = migrateDefaultLanguages();
 if (migrated) log.info({ migrated }, 'Version par défaut ajoutée aux suivis existants');
 pruneCache();

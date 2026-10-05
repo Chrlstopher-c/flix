@@ -8,7 +8,8 @@ import { latestMoment } from '../library/notes';
 import { listLibrary } from '../library/queries';
 import { allCheckpoints, episodesSince } from '../progress/progress';
 import type { TasteResult } from '../taste/engine';
-import { readResult } from '../taste/store';
+import { partnerOf } from '../taste/partner';
+import { duoScope, readResult } from '../taste/store';
 import { fullDetails } from '../tmdb/details';
 import { latestActivity, resumeOf, tasteOf, weekStats, type Title } from './activity';
 
@@ -54,21 +55,24 @@ async function nextEpisode(me: number, titles: Title[]): Promise<Next | null> {
   return found.filter((x): x is Next => x !== null).sort((a, b) => a.date.localeCompare(b.date))[0] ?? null;
 }
 
-export async function dashboard(user: User): Promise<Response> {
+export async function dashboard(user: User, requested: number | null): Promise<Response> {
+  const partner = partnerOf(user, requested);
   const titles = listLibrary() as unknown as Title[]; // forme de listLibrary
   const cps = allCheckpoints();
   const allEps = episodesSince(0);
   const eps = allEps.filter((e) => e.at > Date.now() - 30 * 86_400_000);
-  const other = listUsers().find((u) => u.id !== user.id) ?? null;
+  const others = listUsers().filter((u) => u.id !== user.id);
   const resume = resumeOf(user.id, titles, cps);
   const total = resume?.title.mediaType === 'tv' ? ((await details(resume.title))?.number_of_episodes ?? null) : null;
   const watched = resume ? allEps.filter((e) => e.userId === user.id && e.titleId === resume.title.id).length : 0;
   const moment = latestMoment();
   return json({
     resume: resume && { ...resume, total, watched },
-    tonight: readResult<TasteResult>('duo')?.body.forYou[0] ?? null,
+    tonight: partner ? (readResult<TasteResult>(duoScope(user.id, partner.id))?.body.forYou[0] ?? null) : null,
+    partnerId: partner?.id ?? null,
     week: weekStats(user.id, titles, eps, Date.now()),
-    other: other && latestActivity(other.id, titles, eps, cps),
+    other: others.map((o) => latestActivity(o.id, titles, eps, cps)).filter((a) => a !== null)
+      .sort((a, b) => b.at - a.at)[0] ?? null,
     taste: tasteOf(user.id, titles),
     moment: moment && { ...moment, titleName: titles.find((t) => t.id === moment.titleId)?.name ?? '' },
     next: await nextEpisode(user.id, titles),
@@ -81,10 +85,10 @@ export async function dashboard(user: User): Promise<Response> {
   });
 }
 
-export async function dashboardRoutes(path: string, user: User): Promise<Response | null> {
+export async function dashboardRoutes(req: Request, path: string, user: User): Promise<Response | null> {
   if (path !== '/api/dashboard') return null;
   try {
-    return await dashboard(user);
+    return await dashboard(user, Number(new URL(req.url).searchParams.get('with')) || null);
   } catch (err) {
     log.error({ err }, 'Tableau de bord en erreur');
     return json({ error: 'Tableau de bord indisponible' }, 503);

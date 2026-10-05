@@ -48,5 +48,5 @@ function tick(): void {
 
 export function startScheduler(): void {
   setInterval(tick, TICK_MS);
-  if (!readResult('duo') && !readResult('user:1')) setTimeout(() => void runNow(), 5_000);
+  if (!readResult('user:1')) setTimeout(() => void runNow(), 5_000);
 }
